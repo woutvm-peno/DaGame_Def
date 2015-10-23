@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">andreas</string>
+    <string name="title_activity_main_int">DaGame</string>
+    <string name="coordinates">No coordinates to display :(</string>
+    <string name="main_menu">menu</string>
+    <string name="emptyMenu">no information to display</string>
+    <string name="navigation_drawer_open">open</string>
+    <string name="navigation_drawer_close">close</string>
+    <string name="action_settings">settings</string>
+    <string name="label_activity_gameMode">gameMode</string>
+    <string name="data">data</string>
+    <string name="minigame">minigame</string>
+</resources>
