@@ -3,12 +3,17 @@ package andreas.gps;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 
 /**
  * Created by Andreas on 22/10/2015.
  */
 public class data1 extends AppCompatActivity {
+
+    public int amplitude;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_data1);
@@ -20,6 +25,13 @@ public class data1 extends AppCompatActivity {
         startActivity(intent);
     }
     public void record(View view) {
-        new SoundAct(5000);
+        SoundAct soundAct = new SoundAct(5000);
+        Log.w("record before if", String.valueOf(soundAct.get_sound()));
+        // Create the text view
+        if (soundAct.get_sound() != 0) {
+            Log.w("record after if", String.valueOf(soundAct.get_sound()));
+            TextView text_sound = (TextView) findViewById(R.id.text_sound);
+            text_sound.setText(String.valueOf(soundAct.get_sound()));
+        }
     }
 }
