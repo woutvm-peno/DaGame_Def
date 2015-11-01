@@ -10,4 +10,6 @@
     <string name="label_activity_gameMode">gameMode</string>
     <string name="data">data</string>
     <string name="minigame">minigame</string>
+    <string name="points_text">Points:</string>
+    <string name="points_score">0</string>
 </resources>

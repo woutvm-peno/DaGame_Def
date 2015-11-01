@@ -2,7 +2,6 @@ package andreas.gps;
 import android.media.MediaRecorder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.TextView;
 
 import java.io.IOException;
 // HOE GEBRUIKEN:
@@ -13,6 +12,7 @@ public class SoundAct extends AppCompatActivity {
 
     private MediaRecorder mRecorder = null;
     private SoundAct deze_meter = this;
+    int test;
 
     public SoundAct(int tijdspan)  {
         if (mRecorder == null) {
@@ -37,6 +37,7 @@ public class SoundAct extends AppCompatActivity {
                         mRecorder = null;
 
                         deze_meter.act_sound(maxamp);
+
                     }
 
                 }
@@ -63,11 +64,15 @@ public class SoundAct extends AppCompatActivity {
     public void act_sound(int maxamplitude) {
 
         Log.w("actsound", String.valueOf(maxamplitude));
-        TextView edit_message = (TextView) findViewById(R.id.text_sound);
-        edit_message.setText(String.valueOf(maxamplitude));
-
+        test = maxamplitude;
+        Log.w("actsound test", String.valueOf(test));
 
     }
+    public int get_sound() {
+        Log.w("getsound",String.valueOf(test) );
+        return test;
+    }
+
 
 
 }

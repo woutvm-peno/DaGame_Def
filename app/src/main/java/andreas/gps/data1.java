@@ -2,6 +2,7 @@ package andreas.gps;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -25,13 +26,23 @@ public class data1 extends AppCompatActivity {
         startActivity(intent);
     }
     public void record(View view) {
-        SoundAct soundAct = new SoundAct(5000);
-        Log.w("record before if", String.valueOf(soundAct.get_sound()));
-        // Create the text view
-        if (soundAct.get_sound() != 0) {
-            Log.w("record after if", String.valueOf(soundAct.get_sound()));
-            TextView text_sound = (TextView) findViewById(R.id.text_sound);
-            text_sound.setText(String.valueOf(soundAct.get_sound()));
-        }
+        //counter
+        new CountDownTimer(6000, 1000) {
+            TextView counter = (TextView) findViewById(R.id.counter);
+            SoundAct soundAct = new SoundAct(5000);
+            public void onTick(long millisUntilFinished) {
+                counter.setText("seconds remaining: " + millisUntilFinished / 1000);
+            }
+
+            public void onFinish() {
+                counter.setText("done!");
+                if (soundAct.get_sound() != 0) {
+                    Log.w("record after if", String.valueOf(soundAct.get_sound()));
+                    TextView text_sound = (TextView) findViewById(R.id.text_sound);
+                    text_sound.setText(String.valueOf(soundAct.get_sound()));
+                }
+            }
+        }.start();
+
     }
 }

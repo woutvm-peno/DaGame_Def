@@ -2,21 +2,123 @@ package andreas.gps;
 
 // insert here the main game activity
 
-import android.content.Intent;
+import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.view.View;
+import android.support.v4.app.FragmentActivity;
+import android.widget.TextView;
 
-public class gameMode extends AppCompatActivity {
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
+public class gameMode extends FragmentActivity implements OnMapReadyCallback {
+
+    private GoogleMap mMap;
+    private Circle circleLoc;
+    private myLocations locations = new myLocations();
+    private int r = 5;
+    private static final String TAG = "Message";
+
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.empty_test);
+        setContentView(R.layout.activity_maps);
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
     }
 
 
-    public void switchMain(View view) {
-        Intent intent = new Intent(this, mainInt.class);
-        startActivity(intent);
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        LatLng TARGET = new LatLng(50.817091, 4.002430);
+
+        mMap = googleMap;
+        mMap.setMyLocationEnabled(true);
+        mMap.setOnMyLocationChangeListener(myLocationChangeListener);
+
+        mMap.addMarker(new MarkerOptions().position(TARGET).title("TARGET"));
+        Circle circleTarget = mMap.addCircle(new CircleOptions()
+                .center(TARGET)
+                .radius(5)
+                .strokeColor(Color.RED));
+
+        locations.addLocation(TARGET);
+
+    }
+
+
+    public GoogleMap.OnMyLocationChangeListener myLocationChangeListener = new GoogleMap.OnMyLocationChangeListener() {
+        @Override
+        public void onMyLocationChange(Location location) {
+            LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+
+            locations.addLocation(loc);
+
+            if (circleLoc == null){
+                circleLoc = mMap.addCircle(new CircleOptions()
+                        .center(loc)
+                        .radius(r)
+                        .strokeColor(Color.BLUE));
+            }
+            else {
+                circleLoc.remove();
+
+                if (mMap != null) {
+                    circleLoc = mMap.addCircle(new CircleOptions()
+                            .center(loc)
+                            .radius(r)
+                            .strokeColor(Color.BLUE));
+                }
+            }
+
+            addPoints(locations.getLocation(locations.getSize()-1),locations.getLocation(0));
+        }
+    };
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mMap.setOnMyLocationChangeListener(null);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    public double CalculationByDistance(LatLng StartP, LatLng EndP) {
+        int Radius = 6371000;// radius of earth in Km
+        double lat1 = StartP.latitude;
+        double lat2 = EndP.latitude;
+        double lon1 = StartP.longitude;
+        double lon2 = EndP.longitude;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        return Radius * c;
+    }
+
+    public void addPoints(LatLng location, LatLng target) {
+        TextView points_score = (TextView) findViewById(R.id.points_score);
+
+        if (CalculationByDistance(location, target) <= r*2) {
+            String points_str = (String) points_score.getText();
+            int points_int = Integer.parseInt(points_str);
+            points_int += 10;
+            points_str = Integer.toString(points_int);
+            points_score.setText(points_str);
+        }
     }
 }
