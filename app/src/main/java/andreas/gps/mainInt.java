@@ -50,17 +50,7 @@ public class mainInt extends AppCompatActivity
 
     //    variables
 
-    private Circle circleLoc;
-    private Circle circleTarget;
-    private MyLocations locations = new MyLocations();
-    private int r = 5;
-    private LatLng CURRENT_TARGET;
-    private LatLng TARGET_MAIN = new LatLng(50.864164, 4.678891);
-    private LatLng TARGET_SEC = new LatLng(50.864021, 4.678460);
-    private Marker markerTarget;
-    public Marker mymarker;
     public boolean zoomed = false;
-    public LatLng loc;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     public static final String TAG = "abcd";
@@ -70,9 +60,7 @@ public class mainInt extends AppCompatActivity
     boolean gps_connected = false;
     boolean network_connected = false;
     boolean connections_working = false;
-    public Intent intent;
     public float zoomlevel = 15;
-    public boolean ab;
 
 
 
