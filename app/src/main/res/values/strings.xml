@@ -12,4 +12,6 @@
     <string name="minigame">minigame</string>
     <string name="points_text">Points:</string>
     <string name="points_score">0</string>
+    <string name="zoombutton_text">Zoom to me!</string>
+    <string name="targetbutton_text">Find Target</string>
 </resources>

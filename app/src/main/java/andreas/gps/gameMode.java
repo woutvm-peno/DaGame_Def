@@ -3,11 +3,13 @@ package andreas.gps;
 // insert here the main game activity
 
 import android.app.Dialog;
+import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
@@ -15,6 +17,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -33,6 +36,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
@@ -67,6 +71,7 @@ public class gameMode extends AppCompatActivity
     public float zoomlevel = 18;
     public boolean zoomed = false;
     public LatLng loc;
+    static final String STATE_SCORE = "playerScore";
 
 
     @Override
@@ -82,7 +87,7 @@ public class gameMode extends AppCompatActivity
 
 
 
-        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
@@ -109,7 +114,16 @@ public class gameMode extends AppCompatActivity
             }
         });
 
-        Log.i(TAG, "Oncreate success");
+        if (savedInstanceState != null) {
+            // Restore value of members from saved state
+            int mCurrentScore = savedInstanceState.getInt(STATE_SCORE);
+            TextView points_score = (TextView) findViewById(R.id.points_score);
+            String points_str = Integer.toString(mCurrentScore);
+            points_score.setText(points_str);}
+
+            Log.i(TAG, "Oncreate success");
+
+
     }
 
 
@@ -177,7 +191,7 @@ public class gameMode extends AppCompatActivity
         builder.show();
     }
 
-    public void show_alertdialog_gps(){
+    public void show_alertdialog_gps() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("No gps!");
         builder.setMessage("Please turn on location services.");
@@ -214,8 +228,7 @@ public class gameMode extends AppCompatActivity
                     .center(loc)
                     .radius(r)
                     .strokeColor(Color.BLUE));
-        }
-        else {
+        } else {
             circleLoc.remove();
 
             if (mMap != null) {
@@ -233,7 +246,8 @@ public class gameMode extends AppCompatActivity
         }
         MarkerOptions options = new MarkerOptions()
                 .position(loc)
-                .title("I am here!");
+                .title("I am here!")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         mymarker = mMap.addMarker(options);
         Log.i(TAG, "Marker placed.");
     }
@@ -275,6 +289,14 @@ public class gameMode extends AppCompatActivity
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this);
             mGoogleApiClient.disconnect();
         }
+
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        TextView points_score = (TextView) findViewById(R.id.points_score);
+        String points_str = (String) points_score.getText();
+        int mCurrentScore = Integer.parseInt(points_str);
+        editor.putInt(STATE_SCORE, mCurrentScore);
+        editor.apply();
     }
 
     @Override
@@ -287,9 +309,16 @@ public class gameMode extends AppCompatActivity
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         if (activeNetwork != null && activeNetwork.isConnected()) network_connected = true;
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) gps_connected = true;
-        if (network_connected == true && gps_connected == true) connections_working = true;
+        if (network_connected && gps_connected) connections_working = true;
         Log.i(TAG,"Connecting apiclient");
         mGoogleApiClient.connect();
+
+        TextView points_score = (TextView) findViewById(R.id.points_score);
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        if (preferences.getInt(STATE_SCORE,0) != 0) {
+            int mCurrentScore = preferences.getInt(STATE_SCORE, 0);
+            String points_str = Integer.toString(mCurrentScore);
+            points_score.setText(points_str);}
 
     }
 
@@ -366,16 +395,14 @@ public class gameMode extends AppCompatActivity
     }
 
     public void targetbutton(View view) {
-        Log.i(TAG,"Targetbutton pressed.");
+        Log.i(TAG, "Targetbutton pressed.");
         LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
         boundsBuilder.include(loc);
         boundsBuilder.include(CURRENT_TARGET);
 // pan to see all markers on map:
         LatLngBounds bounds = boundsBuilder.build();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 3));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,100));
     }
-
-
 
 
     @Override
@@ -392,6 +419,18 @@ public class gameMode extends AppCompatActivity
 
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        // Save the user's current game state
+        TextView points_score = (TextView) findViewById(R.id.points_score);
+        String points_str = (String) points_score.getText();
+        int mCurrentScore = Integer.parseInt(points_str);
+        savedInstanceState.putInt(STATE_SCORE, mCurrentScore);
+
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
     }
 
 
