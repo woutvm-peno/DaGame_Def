@@ -5,20 +5,35 @@ import com.google.android.gms.maps.model.LatLng;
 import java.util.ArrayList;
 import java.util.List;
 
-class myLocations {
+class MyLocations {
 
-    private final List<LatLng> locations = new ArrayList<LatLng>();
+    private final List<LatLng> mylocations = new ArrayList<>();
+    private final List<LatLng> targetlocations = new ArrayList<>();
 
-    public void addLocation(LatLng latLng){
-        locations.add(latLng);
+    public void addMyLocation(LatLng latLng){
+        mylocations.add(latLng);
     }
 
-    public LatLng getLocation(int place) {
-        return locations.get(place);
+    public void addTargetLocation(LatLng latLng){
+        targetlocations.add(latLng);
     }
 
-    public int getSize(){
-        return locations.size();
+    public LatLng getMyLocation(int place) {
+        return mylocations.get(place);
     }
+
+    public int getMySize(){
+        return mylocations.size();
+    }
+
+    public LatLng getTargetLocation(int place) {
+        return targetlocations.get(place);
+    }
+
+    public int getTargetSize(){
+        return targetlocations.size();
+    }
+
+    public LatLng getLastLocation() {return mylocations.get(mylocations.lastIndexOf(this));};
+
 }
-

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MapsActivity"
+    tools:context=".gameMode"
     >
 
     <fragment xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -34,6 +34,27 @@
         android:layout_toEndOf="@+id/points_text"
         android:textSize="30sp"
         android:textColor="#000000" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Zoom to me!"
+        android:id="@+id/zoombutton"
+        android:layout_above="@+id/points_score"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:onClick="zoombutton" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Find Target"
+        android:id="@+id/targetbutton"
+        android:layout_below="@+id/zoombutton"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:singleLine="false"
+        android:layout_alignParentStart="false"
+        android:onClick="targetbutton" />
 
 </RelativeLayout>
 
