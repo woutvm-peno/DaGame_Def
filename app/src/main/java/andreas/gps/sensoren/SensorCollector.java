@@ -4,7 +4,6 @@ package andreas.gps.sensoren;
  * Created by root on 11/10/15.
  */
 
-import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -19,7 +18,7 @@ import java.util.Stack;
  * Created by root on 11/9/15.
  */
 
-public class SensorCollector extends Activity implements SensorEventListener {
+public class SensorCollector implements SensorEventListener {
     private static SensorManager sensorManager;
     public void start(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -55,8 +54,9 @@ public class SensorCollector extends Activity implements SensorEventListener {
 
     private Stack<SensorActor> SensorActors;
 
-    public SensorCollector(){
+    public SensorCollector(SensorActor sensact){
         SensorActors = new Stack<SensorActor>();
+        this.set(sensact);
     }
 
     public void push(SensorActor SensorActor){

@@ -1,9 +1,9 @@
 package andreas.gps;
 
 // insert here the main game activity
+//holoholo
 
 import android.app.Dialog;
-import android.app.Fragment;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -16,10 +16,11 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.Settings;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,6 +44,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import andreas.gps.sensoren.SensorCollector;
+import andreas.gps.sensoren.Sensor_SAVE;
 
 public class gameMode extends AppCompatActivity
         implements OnMapReadyCallback,
@@ -78,6 +82,11 @@ public class gameMode extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        //login
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_low_in_rank);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -342,6 +351,7 @@ public class gameMode extends AppCompatActivity
         TextView points_score = (TextView) findViewById(R.id.points_score);
 
         if (CalculationByDistance(location, target) <= r*2) {
+            killMove(null);
             String points_str = (String) points_score.getText();
             int points_int = Integer.parseInt(points_str);
             points_int += 10;
@@ -350,6 +360,45 @@ public class gameMode extends AppCompatActivity
 
             changeTarget(TARGET_MAIN,TARGET_SEC);
         }
+    }
+
+    public void killMovegenerator(View view){
+
+    }
+    public void killMove(View view) {
+
+        CountDownTimer start = new CountDownTimer(5000, 200) {
+            TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
+            TextView points_score = (TextView) findViewById(R.id.points_score);
+            public Sensor_SAVE sensorsave = new Sensor_SAVE();
+            SensorCollector sensorcol = new SensorCollector(sensorsave);
+
+            public void onTick(long millisUntilFinished) {
+                killMoveText.setText("seconds remaining: " + millisUntilFinished / 1000);
+                sensorcol.start(getApplicationContext());
+                if (sensorsave.getAccelerox() > 0.8) {
+                    killMoveText.setText("gotcha!");
+
+
+                }
+            }
+
+            public void onFinish() {
+                sensorcol.stop();
+                if (killMoveText.getText() == "gotcha!") {
+                    killMoveText.setText("points added!");
+                    String points_str = (String) points_score.getText();
+                    int points_int = Integer.parseInt(points_str);
+                    points_int += 100;
+                    points_str = Integer.toString(points_int);
+                    points_score.setText(points_str);
+                } else {
+                    killMoveText.setText("toooo baaaad, no point!" + "" + String.valueOf(sensorsave.getAccelerox()));
+                }
+
+            }
+        }.start();
+
     }
 
     public void changeTarget(LatLng Target1, LatLng Target2){

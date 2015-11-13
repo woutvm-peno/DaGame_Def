@@ -14,4 +14,9 @@
     <string name="points_score">0</string>
     <string name="zoombutton_text">Zoom to me!</string>
     <string name="targetbutton_text">Find Target</string>
+    <string name="login_text">email</string>
+    <string name="password_text">password</string>
+    <string name="login_button">login</string>
+    <string name="register_button">register</string>
+    <string name="label_login">login</string>
 </resources>

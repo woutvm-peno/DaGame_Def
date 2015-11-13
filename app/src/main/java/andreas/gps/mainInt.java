@@ -38,7 +38,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -83,6 +82,10 @@ public class mainInt extends AppCompatActivity
         Intent intent = new Intent(this, gameMode.class);
         startActivity(intent);
     }
+    public void switchLogin(View view) {
+        Intent intent = new Intent(this, login.class);
+        startActivity(intent);
+    }
     public void switchData1(View view) {
         Intent intent = new Intent(this, data1.class);
         startActivity(intent);
@@ -118,9 +121,11 @@ public class mainInt extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nav_drawer);
+
+        //toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("DaGame");
+        getSupportActionBar().setTitle("Home");
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -128,6 +133,7 @@ public class mainInt extends AppCompatActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        // navigation drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -137,6 +143,7 @@ public class mainInt extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        //location
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -294,14 +301,26 @@ public class mainInt extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
+        switch (id){
+            case R.id.action_settings:
+                return true;
+            case R.id.gameMode:
+                switchGameMode(null);
+                break;
+            case R.id.login_toolbar:
+                switchLogin(null);
+                break;
+        }
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        else if (id == R.id.gameMode) {
-            switchGameMode(null);
-        }
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
+//        else if (id == R.id.gameMode) {
+//            switchGameMode(null);
+//        }
+//        else if (id == R.id.login_toolbar) {
+//            switchLogin(null);
+//        }
 
             return super.onOptionsItemSelected(item);
     }
