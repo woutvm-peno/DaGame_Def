@@ -41,6 +41,13 @@
         <activity
             android:name=".gameMode"
             android:label="@string/label_activity_gameMode"
+            android:parentActivityName=".mainInt"
+            >
+        </activity>
+        <activity
+            android:name=".login"
+            android:label="@string/label_login"
+            android:parentActivityName=".mainInt"
             >
         </activity>
         <activity
