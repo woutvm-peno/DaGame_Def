@@ -23,15 +23,6 @@
         android:text="@string/points_text"
         android:textSize="30sp"
         android:textColor="#000000" />
-    <TextView
-        android:id="@+id/killMoveText"
-        android:layout_width="wrap_content"
-        android:layout_height="50dp"
-        android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
-        android:hint="kilmove"
-        android:textSize="30sp"
-        android:textColor="#000000" />
 
     <TextView
         android:layout_width="100dp"
@@ -71,6 +62,12 @@
         android:visibility="gone"
         android:id="@+id/kill_button"
         android:onClick="killMoveCounter"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:id="@+id/killMoveText"
+        android:layout_marginTop="62dp" />
 
     <include layout="@layout/toolbar_low_in_rank"/>
 

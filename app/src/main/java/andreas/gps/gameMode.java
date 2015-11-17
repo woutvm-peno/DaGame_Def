@@ -82,6 +82,16 @@ public class gameMode extends AppCompatActivity
     Calendar c = Calendar.getInstance();
     private double mySpeed = 0;
     private int kill_button_counter = 0;
+    private String killedText = "kill confirmed";
+    private String killedPointsAddedText = "point added!";
+    private String killedNotText = "You missed try again!";
+    private String killmoveAcellorText="accelerate!";
+    private String killmoveGyroText="Shoot him down!";
+    private String killmoveSoundText="Scream him to dead!";
+    private String killmoveSpeedText="get to your highest speed!";
+    private String killmovelightText="Remove al light!";
+    private String killmovePressButtonText="Press him to dead!";
+
 
 
     @Override
@@ -359,12 +369,6 @@ public class gameMode extends AppCompatActivity
 
         if (CalculationByDistance(location, target) <= r*2) {
             killMovegenerator(null);
-            String points_str = (String) points_score.getText();
-            int points_int = Integer.parseInt(points_str);
-            points_int += 10;
-            points_str = Integer.toString(points_int);
-            points_score.setText(points_str);
-
             changeTarget(TARGET_MAIN,TARGET_SEC);
         }
     }
@@ -383,8 +387,11 @@ public class gameMode extends AppCompatActivity
         else if (seconds>=40 && seconds<50){
             killMoveSpeed(null);
         }
-        else if (seconds>=50){
+        else if (seconds>=50&& seconds<55){
             killMovePressButton(null);
+        }
+        else if (seconds>=55){
+            killMovelight(null);
         }
     }
 
@@ -397,10 +404,11 @@ public class gameMode extends AppCompatActivity
             SensorCollector sensorcol = new SensorCollector(sensorsave);
 
             public void onTick(long millisUntilFinished) {
-                killMoveText.setText("seconds remaining: " + millisUntilFinished / 1000);
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmoveAcellorText + millisUntilFinished / 1000);
                 sensorcol.start(getApplicationContext());
                 if (sensorsave.getAccelerox() > 0.8) {
-                    killMoveText.setText("gotcha!");
+                    killMoveText.setText(killedText);
 
 
                 }
@@ -408,15 +416,17 @@ public class gameMode extends AppCompatActivity
 
             public void onFinish() {
                 sensorcol.stop();
-                if (killMoveText.getText() == "gotcha!") {
-                    killMoveText.setText("points added!");
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
                     String points_str = (String) points_score.getText();
                     int points_int = Integer.parseInt(points_str);
                     points_int += 100;
                     points_str = Integer.toString(points_int);
                     points_score.setText(points_str);
                 } else {
-                    killMoveText.setText("toooo baaaad, no point!" + "" + String.valueOf(sensorsave.getAccelerox()));
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
                 }
 
             }
@@ -431,25 +441,28 @@ public class gameMode extends AppCompatActivity
             TextView points_score = (TextView) findViewById(R.id.points_score);
             SoundAct soundact = new SoundAct(0);
             public void onTick(long millisUntilFinished) {
-                killMoveText.setText("seconds remaining: " + millisUntilFinished / 1000);
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmoveSoundText + millisUntilFinished / 1000);
                 soundact.getMaxsound();
                 if (soundact.getMaxsound() > 10000) {
-                    killMoveText.setText("gotcha!");
+                    killMoveText.setText(killedText);
 
 
                 }
             }
 
             public void onFinish() {
-                if (killMoveText.getText() == "gotcha!") {
-                    killMoveText.setText("points added!");
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
                     String points_str = (String) points_score.getText();
                     int points_int = Integer.parseInt(points_str);
                     points_int += 100;
                     points_str = Integer.toString(points_int);
                     points_score.setText(points_str);
                 } else {
-                    killMoveText.setText("toooo baaaad, no point!" );
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
                 }
 
             }
@@ -465,10 +478,11 @@ public class gameMode extends AppCompatActivity
             SensorCollector sensorcol = new SensorCollector(sensorsave);
 
             public void onTick(long millisUntilFinished) {
-                killMoveText.setText("seconds remaining: " + millisUntilFinished / 1000);
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmoveGyroText + millisUntilFinished / 1000);
                 sensorcol.start(getApplicationContext());
                 if (sensorsave.getGyroscoopx() > 0.8) {
-                    killMoveText.setText("gotcha!");
+                    killMoveText.setText(killedText);
 
 
                 }
@@ -476,15 +490,17 @@ public class gameMode extends AppCompatActivity
 
             public void onFinish() {
                 sensorcol.stop();
-                if (killMoveText.getText() == "gotcha!") {
-                    killMoveText.setText("points added!");
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
                     String points_str = (String) points_score.getText();
                     int points_int = Integer.parseInt(points_str);
                     points_int += 100;
                     points_str = Integer.toString(points_int);
                     points_score.setText(points_str);
                 } else {
-                    killMoveText.setText("toooo baaaad, no point!");
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
                 }
 
             }
@@ -501,10 +517,11 @@ public class gameMode extends AppCompatActivity
             SensorCollector sensorcol = new SensorCollector(sensorsave);
 
             public void onTick(long millisUntilFinished) {
-                killMoveText.setText("seconds remaining: " + millisUntilFinished / 1000);
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmovelightText + millisUntilFinished / 1000);
                 sensorcol.start(getApplicationContext());
                 if (sensorsave.getLicht() > 0.8) {
-                    killMoveText.setText("gotcha!");
+                    killMoveText.setText(killedText);
 
 
                 }
@@ -512,15 +529,17 @@ public class gameMode extends AppCompatActivity
 
             public void onFinish() {
                 sensorcol.stop();
-                if (killMoveText.getText() == "gotcha!") {
-                    killMoveText.setText("points added!");
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
                     String points_str = (String) points_score.getText();
                     int points_int = Integer.parseInt(points_str);
                     points_int += 100;
                     points_str = Integer.toString(points_int);
                     points_score.setText(points_str);
                 } else {
-                    killMoveText.setText("toooo baaaad, no point!");
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
                 }
 
             }
@@ -534,22 +553,25 @@ public class gameMode extends AppCompatActivity
             TextView points_score = (TextView) findViewById(R.id.points_score);
 
             public void onTick(long millisUntilFinished) {
-                killMoveText.setText("seconds remaining: " + millisUntilFinished / 1000);
-                if (mySpeed > 0.8) {
-                    killMoveText.setText("gotcha!");
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmoveSpeedText + millisUntilFinished / 1000);
+                if (mySpeed > 8) {
+                    killMoveText.setText(killedText);
                 }
             }
 
             public void onFinish() {
-                if (killMoveText.getText() == "gotcha!") {
-                    killMoveText.setText("points added!");
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
                     String points_str = (String) points_score.getText();
                     int points_int = Integer.parseInt(points_str);
                     points_int += 100;
                     points_str = Integer.toString(points_int);
                     points_score.setText(points_str);
                 } else {
-                    killMoveText.setText("toooo baaaad, no point!");
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
                 }
 
             }
@@ -567,27 +589,29 @@ public class gameMode extends AppCompatActivity
             TextView points_score = (TextView) findViewById(R.id.points_score);
 
             public void onTick(long millisUntilFinished) {
-                killMoveText.setText("seconds remaining: " + millisUntilFinished / 1000);
+                killMoveText.setText(killmovePressButtonText + millisUntilFinished / 1000);
                 kill_button.setVisibility(View.VISIBLE);
                 if (kill_button_counter > 4) {
-                    kill_button.setText("gotcha!");
-                    killMoveText.setText("gotcha!");
+                    kill_button.setText(killedText);
+                    killMoveText.setText(killedText);
 
 
                 }
             }
 
             public void onFinish() {
-                kill_button.setVisibility(View.GONE);
-                if (killMoveText.getText() == "gotcha!") {
-                    killMoveText.setText("points added!");
+                kill_button_counter = 0;
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
                     String points_str = (String) points_score.getText();
                     int points_int = Integer.parseInt(points_str);
                     points_int += 100;
                     points_str = Integer.toString(points_int);
                     points_score.setText(points_str);
                 } else {
-                    killMoveText.setText("toooo baaaad, no point!");
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
                 }
 
             }
