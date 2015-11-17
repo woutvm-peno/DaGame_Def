@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/activity_maps"
     tools:context=".gameMode"
     >
 
@@ -63,6 +64,13 @@
         android:layout_alignParentEnd="true"
         android:singleLine="false"
         android:onClick="targetbutton" />
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        android:id="@+id/kill_button"
+        android:onClick="killMoveCounter"/>
 
     <include layout="@layout/toolbar_low_in_rank"/>
 
