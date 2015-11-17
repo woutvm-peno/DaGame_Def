@@ -7,32 +7,39 @@
         android:layout_height="wrap_content"
         android:text="@string/login_text"
         android:id="@+id/login_text"
-        android:layout_marginTop="68dp"/>
+        android:layout_marginTop="150dp"
+        android:layout_marginLeft="15dp" />
 
     <EditText
-        android:id="@+id/login"
-        android:layout_width="match_parent"
+        android:id="@+id/login_edit"
+        android:layout_width="320dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/login_text"/>
+        android:layout_marginBottom="10dp"
+        android:layout_below="@+id/login_text"
+        android:layout_marginLeft="15dp"
+        android:inputType="text" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/password_text"
         android:id="@+id/password_text"
-        android:layout_below="@+id/login"/>
+        android:layout_below="@+id/login_edit"
+        android:layout_marginLeft="15dp" />
 
     <EditText
-        android:id="@+id/password"
-        android:layout_width="match_parent"
+        android:id="@+id/password_edit"
+        android:layout_width="320dp"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/password_text"/>
+        android:inputType="textPassword"
+        android:layout_below="@+id/password_text"
+        android:layout_marginLeft="15dp" />
 
     <Button
         android:id="@+id/login_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/password"
+        android:layout_below="@+id/password_edit"
         android:layout_marginTop="25dp"
         android:text="@string/login_button"
         android:layout_centerHorizontal="true"/>
@@ -40,18 +47,13 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="or if you new here"
+        android:text="@string/register_click_text"
         android:id="@+id/register_text"
         android:layout_below="@+id/login_button"
-        android:layout_marginTop="50dp"/>
+        android:layout_alignRight="@+id/login_button"
+        android:layout_alignEnd="@+id/login_button"
+        android:layout_marginTop="19dp" />
 
-    <Button
-        android:id="@+id/register_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/register_text"
-        android:text="@string/register_button"
-        />
 
     <include
         layout="@layout/toolbar_low_in_rank"/>

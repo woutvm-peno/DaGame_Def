@@ -41,39 +41,37 @@
         <activity
             android:name=".gameMode"
             android:label="@string/label_activity_gameMode"
-            android:parentActivityName=".mainInt"
-            >
+            android:parentActivityName=".mainInt" >
         </activity>
         <activity
             android:name=".login"
             android:label="@string/label_login"
-            android:parentActivityName=".mainInt"
-            >
+            android:parentActivityName=".mainInt" >
         </activity>
         <activity
             android:name=".data1"
-            android:label="@string/data"
-            >
+            android:label="@string/data" >
         </activity>
         <activity
             android:name=".data2"
-            android:label="@string/data"
-            >
+            android:label="@string/data" >
         </activity>
         <activity
             android:name=".data3"
-            android:label="@string/data"
-            >
+            android:label="@string/data" >
         </activity>
         <activity
             android:name=".minigame1"
-            android:label="@string/minigame"
-            >
+            android:label="@string/minigame" >
         </activity>
         <activity
             android:name=".minigame2"
-            android:label="@string/minigame"
-            >
+            android:label="@string/minigame" >
+        </activity>
+        <activity
+            android:name=".Register"
+            android:label="@string/title_activity_register"
+            android:theme="@style/NoActionBarTheme" >
         </activity>
     </application>
 
