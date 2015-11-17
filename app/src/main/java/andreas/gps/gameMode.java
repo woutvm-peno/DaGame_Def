@@ -92,6 +92,14 @@ public class gameMode extends AppCompatActivity
     private String killmoveSpeedText="get to your highest speed!";
     private String killmovelightText="Remove al light!";
     private String killmovePressButtonText="Press him to dead!";
+    private double killmoveAcellorValue = 0.5;
+    private double killmoveGyroValue = 40;
+    private double killmoveSoundValue = 25000;
+    private double killmoveSpeedValue = 6.4;
+    private double killmovelightValue = 2;
+    private double killmovePressButtonValue = 5;
+
+
 
 
 
@@ -366,8 +374,6 @@ public class gameMode extends AppCompatActivity
     }
 
     public void addPoints(LatLng location, LatLng target) {
-        TextView points_score = (TextView) findViewById(R.id.points_score);
-
         if (CalculationByDistance(location, target) <= r*2) {
             killMovegenerator(null);
             changeTarget(TARGET_MAIN,TARGET_SEC);
@@ -408,7 +414,7 @@ public class gameMode extends AppCompatActivity
                 killMoveText.setVisibility(View.VISIBLE);
                 killMoveText.setText(killmoveAcellorText + millisUntilFinished / 1000);
                 sensorcol.start(getApplicationContext());
-                if (sensorsave.getAccelerox() > 0.8) {
+                if (sensorsave.getAccelerox() > killmoveAcellorValue) {
                     killMoveText.setText(killedText);
 
 
@@ -445,7 +451,7 @@ public class gameMode extends AppCompatActivity
                 killMoveText.setVisibility(View.VISIBLE);
                 killMoveText.setText(killmoveSoundText + millisUntilFinished / 1000);
                 soundact.getMaxsound();
-                if (soundact.getMaxsound() > 10000) {
+                if (soundact.getMaxsound() > killmoveSoundValue) {
                     killMoveText.setText(killedText);
 
 
@@ -482,7 +488,7 @@ public class gameMode extends AppCompatActivity
                 killMoveText.setVisibility(View.VISIBLE);
                 killMoveText.setText(killmoveGyroText + millisUntilFinished / 1000);
                 sensorcol.start(getApplicationContext());
-                if (sensorsave.getGyroscoopx() > 0.8) {
+                if (sensorsave.getGyroscoopx() > killmoveGyroValue) {
                     killMoveText.setText(killedText);
 
 
@@ -521,7 +527,7 @@ public class gameMode extends AppCompatActivity
                 killMoveText.setVisibility(View.VISIBLE);
                 killMoveText.setText(killmovelightText + millisUntilFinished / 1000);
                 sensorcol.start(getApplicationContext());
-                if (sensorsave.getLicht() > 0.8) {
+                if (sensorsave.getLicht() < killmovelightValue) {
                     killMoveText.setText(killedText);
 
 
@@ -556,7 +562,7 @@ public class gameMode extends AppCompatActivity
             public void onTick(long millisUntilFinished) {
                 killMoveText.setVisibility(View.VISIBLE);
                 killMoveText.setText(killmoveSpeedText + millisUntilFinished / 1000);
-                if (mySpeed > 8) {
+                if (mySpeed > killmoveSpeedValue) {
                     killMoveText.setText(killedText);
                 }
             }
@@ -592,7 +598,7 @@ public class gameMode extends AppCompatActivity
             public void onTick(long millisUntilFinished) {
                 killMoveText.setText(killmovePressButtonText + millisUntilFinished / 1000);
                 kill_button.setVisibility(View.VISIBLE);
-                if (kill_button_counter > 4) {
+                if (kill_button_counter > killmovePressButtonValue) {
                     kill_button.setText(killedText);
                     killMoveText.setText(killedText);
 
