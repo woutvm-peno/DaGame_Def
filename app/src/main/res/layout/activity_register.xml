@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/login_text"
+        android:id="@+id/login_register_text"
+        android:layout_marginTop="36dp"
+        android:layout_below="@+id/include"
+        android:layout_alignLeft="@+id/email_text"
+        android:layout_alignStart="@+id/email_text" />
+
+    <EditText
+        android:id="@+id/login_register_edit"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_below="@+id/login_register_text"
+        android:layout_marginLeft="15dp"
+        android:inputType="text" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/email_text"
+        android:id="@+id/email_text"
+        android:layout_below="@+id/login_register_edit"
+        android:layout_marginLeft="15dp" />
+
+    <EditText
+        android:id="@+id/email_edit"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_below="@+id/email_text"
+        android:layout_marginLeft="15dp"
+        android:inputType="textEmailAddress"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/password_text"
+        android:id="@+id/password_register_text"
+        android:layout_below="@+id/email_edit"
+        android:layout_marginLeft="15dp" />
+
+    <EditText
+        android:id="@+id/password_register_edit"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:layout_below="@+id/password_register_text"
+        android:layout_marginLeft="15dp"
+        android:layout_marginBottom="10dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/confirm_password_text"
+        android:id="@+id/password_confirm_text"
+        android:layout_below="@+id/password_register_edit"
+        android:layout_marginLeft="15dp" />
+
+    <EditText
+        android:id="@+id/password_confirm_edit"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:layout_below="@+id/password_confirm_text"
+        android:layout_marginLeft="15dp"
+        android:layout_marginBottom="10dp"/>
+
+    <Button
+        android:id="@+id/register_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/password_confirm_edit"
+        android:layout_marginTop="25dp"
+        android:text="@string/register_button"
+        android:layout_centerHorizontal="true"/>
+
+    <include
+        layout="@layout/toolbar_low_in_rank"
+        android:id="@+id/include" />
+</RelativeLayout>

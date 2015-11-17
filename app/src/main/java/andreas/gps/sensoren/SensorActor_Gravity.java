@@ -1,8 +1,5 @@
 package andreas.gps.sensoren;
 
-/**
- * Created by root on 11/10/15.
- */
 import android.util.Log;
 
     public class SensorActor_Gravity extends SensorActor {
