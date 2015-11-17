@@ -71,7 +71,6 @@
         <activity
             android:name=".Register"
             android:label="@string/title_activity_register"
-            android:theme="@style/NoActionBarTheme"
             android:parentActivityName=".mainInt">
         </activity>
     </application>

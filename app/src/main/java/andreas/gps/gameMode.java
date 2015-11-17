@@ -82,6 +82,7 @@ public class gameMode extends AppCompatActivity
     Calendar c = Calendar.getInstance();
     private double mySpeed = 0;
     private int kill_button_counter = 0;
+    //text kkillmoves
     private String killedText = "kill confirmed";
     private String killedPointsAddedText = "point added!";
     private String killedNotText = "You missed try again!";
