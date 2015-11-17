@@ -8,6 +8,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import andreas.gps.sensoren.SoundAct;
+
 /**
  * Created by Andreas on 22/10/2015.
  */
@@ -27,7 +29,7 @@ public class data1 extends AppCompatActivity {
     }
     public void record(View view) {
         //counter
-        new CountDownTimer(6000, 1000) {
+               new CountDownTimer(6000, 1000) {
             TextView counter = (TextView) findViewById(R.id.counter);
             SoundAct soundAct = new SoundAct(5000);
             public void onTick(long millisUntilFinished) {
