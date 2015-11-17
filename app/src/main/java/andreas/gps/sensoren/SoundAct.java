@@ -1,4 +1,5 @@
-package andreas.gps;
+package andreas.gps.sensoren;
+
 import android.media.MediaRecorder;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -13,6 +14,11 @@ public class SoundAct extends AppCompatActivity {
     private MediaRecorder mRecorder = null;
     private SoundAct deze_meter = this;
     int test;
+
+
+    public int getMaxsound() {
+        return mRecorder.getMaxAmplitude();
+    }
 
     public SoundAct(int tijdspan)  {
         if (mRecorder == null) {
@@ -31,14 +37,14 @@ public class SoundAct extends AppCompatActivity {
                     if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
                         int maxamp = mRecorder.getMaxAmplitude();
                         Log.w("maxamp",String.valueOf(maxamp));
-                        //stoppen
-                        mRecorder.stop();
-                        mRecorder.release();
-                        mRecorder = null;
+                    //stoppen
+                    mRecorder.stop();
+                    mRecorder.release();
+                    mRecorder = null;
 
-                        deze_meter.act_sound(maxamp);
+                    deze_meter.act_sound(maxamp);
 
-                    }
+                }
 
                 }
             });
@@ -56,7 +62,11 @@ public class SoundAct extends AppCompatActivity {
             mRecorder.start();
             mRecorder.getMaxAmplitude();
         }
+
     }
+
+
+
 
 
 

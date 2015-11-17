@@ -1,6 +1,7 @@
 package andreas.gps;
 
 // insert here the main game activity
+//holoholo
 
 import android.app.Dialog;
 import android.content.ComponentName;
@@ -8,15 +9,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,12 +37,19 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.Calendar;
+
+import andreas.gps.sensoren.SensorCollector;
+import andreas.gps.sensoren.Sensor_SAVE;
+import andreas.gps.sensoren.SoundAct;
 
 public class gameMode extends AppCompatActivity
         implements OnMapReadyCallback,
@@ -67,12 +78,40 @@ public class gameMode extends AppCompatActivity
     public float zoomlevel = 18;
     public boolean zoomed = false;
     public LatLng loc;
+    static final String STATE_SCORE = "playerScore";
+    Calendar c = Calendar.getInstance();
+    private double mySpeed = 0;
+    private int kill_button_counter = 0;
+    //text kkillmoves
+    private String killedText = "kill confirmed";
+    private String killedPointsAddedText = "point added!";
+    private String killedNotText = "You missed try again!";
+    private String killmoveAcellorText="accelerate!";
+    private String killmoveGyroText="Shoot him down!";
+    private String killmoveSoundText="Scream him to dead!";
+    private String killmoveSpeedText="get to your highest speed!";
+    private String killmovelightText="Remove al light!";
+    private String killmovePressButtonText="Press him to dead!";
+    private double killmoveAcellorValue = 0.5;
+    private double killmoveGyroValue = 40;
+    private double killmoveSoundValue = 25000;
+    private double killmoveSpeedValue = 6.4;
+    private double killmovelightValue = 2;
+    private double killmovePressButtonValue = 5;
+
+
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
+        //login
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_low_in_rank);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -82,7 +121,7 @@ public class gameMode extends AppCompatActivity
 
 
 
-        GoogleApiClient mGoogleApiClient = new GoogleApiClient.Builder(this)
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
@@ -109,7 +148,16 @@ public class gameMode extends AppCompatActivity
             }
         });
 
-        Log.i(TAG, "Oncreate success");
+        if (savedInstanceState != null) {
+            // Restore value of members from saved state
+            int mCurrentScore = savedInstanceState.getInt(STATE_SCORE);
+            TextView points_score = (TextView) findViewById(R.id.points_score);
+            String points_str = Integer.toString(mCurrentScore);
+            points_score.setText(points_str);}
+
+            Log.i(TAG, "Oncreate success");
+
+
     }
 
 
@@ -177,7 +225,7 @@ public class gameMode extends AppCompatActivity
         builder.show();
     }
 
-    public void show_alertdialog_gps(){
+    public void show_alertdialog_gps() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("No gps!");
         builder.setMessage("Please turn on location services.");
@@ -214,8 +262,7 @@ public class gameMode extends AppCompatActivity
                     .center(loc)
                     .radius(r)
                     .strokeColor(Color.BLUE));
-        }
-        else {
+        } else {
             circleLoc.remove();
 
             if (mMap != null) {
@@ -233,7 +280,8 @@ public class gameMode extends AppCompatActivity
         }
         MarkerOptions options = new MarkerOptions()
                 .position(loc)
-                .title("I am here!");
+                .title("I am here!")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         mymarker = mMap.addMarker(options);
         Log.i(TAG, "Marker placed.");
     }
@@ -261,6 +309,7 @@ public class gameMode extends AppCompatActivity
     @Override
     public void onLocationChanged(Location location) {
         Log.i(TAG, "Location Changed.");
+        mySpeed=location.getSpeed();
         handleNewLocation(location);
 
 
@@ -275,6 +324,14 @@ public class gameMode extends AppCompatActivity
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this);
             mGoogleApiClient.disconnect();
         }
+
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        TextView points_score = (TextView) findViewById(R.id.points_score);
+        String points_str = (String) points_score.getText();
+        int mCurrentScore = Integer.parseInt(points_str);
+        editor.putInt(STATE_SCORE, mCurrentScore);
+        editor.apply();
     }
 
     @Override
@@ -287,9 +344,16 @@ public class gameMode extends AppCompatActivity
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         if (activeNetwork != null && activeNetwork.isConnected()) network_connected = true;
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) gps_connected = true;
-        if (network_connected == true && gps_connected == true) connections_working = true;
+        if (network_connected && gps_connected) connections_working = true;
         Log.i(TAG,"Connecting apiclient");
         mGoogleApiClient.connect();
+
+        TextView points_score = (TextView) findViewById(R.id.points_score);
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        if (preferences.getInt(STATE_SCORE,0) != 0) {
+            int mCurrentScore = preferences.getInt(STATE_SCORE, 0);
+            String points_str = Integer.toString(mCurrentScore);
+            points_score.setText(points_str);}
 
     }
 
@@ -310,17 +374,256 @@ public class gameMode extends AppCompatActivity
     }
 
     public void addPoints(LatLng location, LatLng target) {
-        TextView points_score = (TextView) findViewById(R.id.points_score);
-
         if (CalculationByDistance(location, target) <= r*2) {
-            String points_str = (String) points_score.getText();
-            int points_int = Integer.parseInt(points_str);
-            points_int += 10;
-            points_str = Integer.toString(points_int);
-            points_score.setText(points_str);
-
+            killMovegenerator(null);
             changeTarget(TARGET_MAIN,TARGET_SEC);
         }
+    }
+
+    public void killMovegenerator(View view){
+        int seconds = c.get(Calendar.SECOND);
+        if (seconds<10){
+            killMoveAccelor(null);
+        }
+        else if (seconds>=10 && seconds<20){
+            killMoveGyroscoop(null);
+        }
+        else if (seconds>=20 && seconds<30){
+            killMoveSound(null);
+        }
+        else if (seconds>=40 && seconds<50){
+            killMoveSpeed(null);
+        }
+        else if (seconds>=50&& seconds<55){
+            killMovePressButton(null);
+        }
+        else if (seconds>=55){
+            killMovelight(null);
+        }
+    }
+
+    public void killMoveAccelor(View view) {
+
+        CountDownTimer start = new CountDownTimer(5000, 200) {
+            TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
+            TextView points_score = (TextView) findViewById(R.id.points_score);
+            public Sensor_SAVE sensorsave = new Sensor_SAVE();
+            SensorCollector sensorcol = new SensorCollector(sensorsave);
+
+            public void onTick(long millisUntilFinished) {
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmoveAcellorText + millisUntilFinished / 1000);
+                sensorcol.start(getApplicationContext());
+                if (sensorsave.getAccelerox() > killmoveAcellorValue) {
+                    killMoveText.setText(killedText);
+
+
+                }
+            }
+
+            public void onFinish() {
+                sensorcol.stop();
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
+                    String points_str = (String) points_score.getText();
+                    int points_int = Integer.parseInt(points_str);
+                    points_int += 100;
+                    points_str = Integer.toString(points_int);
+                    points_score.setText(points_str);
+                } else {
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
+                }
+
+            }
+        }.start();
+
+    }
+
+    public void killMoveSound(View view) {
+
+        CountDownTimer start = new CountDownTimer(5000, 200) {
+            TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
+            TextView points_score = (TextView) findViewById(R.id.points_score);
+            SoundAct soundact = new SoundAct(0);
+            public void onTick(long millisUntilFinished) {
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmoveSoundText + millisUntilFinished / 1000);
+                soundact.getMaxsound();
+                if (soundact.getMaxsound() > killmoveSoundValue) {
+                    killMoveText.setText(killedText);
+
+
+                }
+            }
+
+            public void onFinish() {
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
+                    String points_str = (String) points_score.getText();
+                    int points_int = Integer.parseInt(points_str);
+                    points_int += 100;
+                    points_str = Integer.toString(points_int);
+                    points_score.setText(points_str);
+                } else {
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
+                }
+
+            }
+        }.start();
+
+    }
+    public void killMoveGyroscoop(View view) {
+
+        CountDownTimer start = new CountDownTimer(5000, 200) {
+            TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
+            TextView points_score = (TextView) findViewById(R.id.points_score);
+            public Sensor_SAVE sensorsave = new Sensor_SAVE();
+            SensorCollector sensorcol = new SensorCollector(sensorsave);
+
+            public void onTick(long millisUntilFinished) {
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmoveGyroText + millisUntilFinished / 1000);
+                sensorcol.start(getApplicationContext());
+                if (sensorsave.getGyroscoopx() > killmoveGyroValue) {
+                    killMoveText.setText(killedText);
+
+
+                }
+            }
+
+            public void onFinish() {
+                sensorcol.stop();
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
+                    String points_str = (String) points_score.getText();
+                    int points_int = Integer.parseInt(points_str);
+                    points_int += 100;
+                    points_str = Integer.toString(points_int);
+                    points_score.setText(points_str);
+                } else {
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
+                }
+
+            }
+        }.start();
+
+    }
+
+    public void killMovelight(View view) {
+
+        CountDownTimer start = new CountDownTimer(5000, 200) {
+            TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
+            TextView points_score = (TextView) findViewById(R.id.points_score);
+            public Sensor_SAVE sensorsave = new Sensor_SAVE();
+            SensorCollector sensorcol = new SensorCollector(sensorsave);
+
+            public void onTick(long millisUntilFinished) {
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmovelightText + millisUntilFinished / 1000);
+                sensorcol.start(getApplicationContext());
+                if (sensorsave.getLicht() < killmovelightValue) {
+                    killMoveText.setText(killedText);
+
+
+                }
+            }
+
+            public void onFinish() {
+                sensorcol.stop();
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
+                    String points_str = (String) points_score.getText();
+                    int points_int = Integer.parseInt(points_str);
+                    points_int += 100;
+                    points_str = Integer.toString(points_int);
+                    points_score.setText(points_str);
+                } else {
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
+                }
+
+            }
+        }.start();
+
+    }
+    public void killMoveSpeed(View view) {
+
+        CountDownTimer start = new CountDownTimer(5000, 200) {
+            TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
+            TextView points_score = (TextView) findViewById(R.id.points_score);
+
+            public void onTick(long millisUntilFinished) {
+                killMoveText.setVisibility(View.VISIBLE);
+                killMoveText.setText(killmoveSpeedText + millisUntilFinished / 1000);
+                if (mySpeed > killmoveSpeedValue) {
+                    killMoveText.setText(killedText);
+                }
+            }
+
+            public void onFinish() {
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
+                    String points_str = (String) points_score.getText();
+                    int points_int = Integer.parseInt(points_str);
+                    points_int += 100;
+                    points_str = Integer.toString(points_int);
+                    points_score.setText(points_str);
+                } else {
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
+                }
+
+            }
+        }.start();
+    }
+
+    public void killMoveCounter(View view){
+        kill_button_counter += 1;
+    }
+
+    public void killMovePressButton(View view) {
+        CountDownTimer start = new CountDownTimer(5000, 200) {
+            Button kill_button = (Button) findViewById(R.id.kill_button);
+            TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
+            TextView points_score = (TextView) findViewById(R.id.points_score);
+
+            public void onTick(long millisUntilFinished) {
+                killMoveText.setText(killmovePressButtonText + millisUntilFinished / 1000);
+                kill_button.setVisibility(View.VISIBLE);
+                if (kill_button_counter > killmovePressButtonValue) {
+                    kill_button.setText(killedText);
+                    killMoveText.setText(killedText);
+
+
+                }
+            }
+
+            public void onFinish() {
+                kill_button_counter = 0;
+                if (killMoveText.getText() == killedText) {
+                    killMoveText.setText(killedPointsAddedText);
+                    killMoveText.setVisibility(View.GONE);
+                    String points_str = (String) points_score.getText();
+                    int points_int = Integer.parseInt(points_str);
+                    points_int += 100;
+                    points_str = Integer.toString(points_int);
+                    points_score.setText(points_str);
+                } else {
+                    killMoveText.setText(killedNotText);
+                    killMoveText.setVisibility(View.GONE);
+                }
+
+            }
+        }.start();
+
     }
 
     public void changeTarget(LatLng Target1, LatLng Target2){
@@ -366,16 +669,14 @@ public class gameMode extends AppCompatActivity
     }
 
     public void targetbutton(View view) {
-        Log.i(TAG,"Targetbutton pressed.");
+        Log.i(TAG, "Targetbutton pressed.");
         LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
         boundsBuilder.include(loc);
         boundsBuilder.include(CURRENT_TARGET);
 // pan to see all markers on map:
         LatLngBounds bounds = boundsBuilder.build();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 3));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,100));
     }
-
-
 
 
     @Override
@@ -392,6 +693,18 @@ public class gameMode extends AppCompatActivity
 
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        // Save the user's current game state
+        TextView points_score = (TextView) findViewById(R.id.points_score);
+        String points_str = (String) points_score.getText();
+        int mCurrentScore = Integer.parseInt(points_str);
+        savedInstanceState.putInt(STATE_SCORE, mCurrentScore);
+
+        // Always call the superclass so it can save the view hierarchy state
+        super.onSaveInstanceState(savedInstanceState);
     }
 
 

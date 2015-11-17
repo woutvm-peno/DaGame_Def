@@ -3,10 +3,14 @@ package andreas.gps;
 
 import android.app.Dialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.location.Location;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.design.widget.NavigationView;
@@ -21,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -32,7 +37,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -44,17 +49,7 @@ public class mainInt extends AppCompatActivity
 
     //    variables
 
-    private Circle circleLoc;
-    private Circle circleTarget;
-    private MyLocations locations = new MyLocations();
-    private int r = 5;
-    private LatLng CURRENT_TARGET;
-    private LatLng TARGET_MAIN = new LatLng(50.864164, 4.678891);
-    private LatLng TARGET_SEC = new LatLng(50.864021, 4.678460);
-    private Marker markerTarget;
-    public Marker mymarker;
     public boolean zoomed = false;
-    public LatLng loc;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     public static final String TAG = "abcd";
@@ -64,9 +59,7 @@ public class mainInt extends AppCompatActivity
     boolean gps_connected = false;
     boolean network_connected = false;
     boolean connections_working = false;
-    public Intent intent;
-    public float zoomlevel = 18;
-    public boolean ab;
+    public float zoomlevel = 15;
 
 
 
@@ -87,6 +80,10 @@ public class mainInt extends AppCompatActivity
 
     public void switchGameMode(View view) {
         Intent intent = new Intent(this, gameMode.class);
+        startActivity(intent);
+    }
+    public void switchLogin(View view) {
+        Intent intent = new Intent(this, login.class);
         startActivity(intent);
     }
     public void switchData1(View view) {
@@ -124,9 +121,11 @@ public class mainInt extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.nav_drawer);
+
+        //toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("DaGame");
+        getSupportActionBar().setTitle("Home");
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -134,6 +133,7 @@ public class mainInt extends AppCompatActivity
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        // navigation drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -143,6 +143,7 @@ public class mainInt extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        //location
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
@@ -157,12 +158,11 @@ public class mainInt extends AppCompatActivity
     }
 
 
-
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         Log.i(TAG, "onMapReady");
         mMap = googleMap;
+        mMap.getUiSettings().setMapToolbarEnabled(false);
 
     }
 
@@ -179,16 +179,12 @@ public class mainInt extends AppCompatActivity
             Log.i(TAG, "Handle New Location.");
             handleNewLocation(location);
 
-
         } else if (!network_connected) {
             Log.i(TAG, "No network.");
             show_alertdialog_network();
         } else {
             Log.i(TAG, "No GPS.");
             show_alertdialog_gps();
-
-
-
         }}
 
 
@@ -201,7 +197,7 @@ public class mainInt extends AppCompatActivity
                 Intent intent = new Intent();
                 intent.setComponent(new ComponentName(
                         "com.android.settings",
-                        "com.android.settings.Settings$DataUsageSummaryActivity"));;
+                        "com.android.settings.Settings$DataUsageSummaryActivity"));
                 startActivity(intent);
             }
         });
@@ -247,17 +243,28 @@ public class mainInt extends AppCompatActivity
         Log.d(TAG, "handling New Location");
         double currentLatitude = location.getLatitude();
         double currentLongitude = location.getLongitude();
-        LatLng latLng = new LatLng(currentLatitude, currentLongitude);
+        final LatLng latLng = new LatLng(currentLatitude, currentLongitude);
         if (marker != null) {
             marker.remove();
         }
         MarkerOptions options = new MarkerOptions()
                 .position(latLng)
-                .title("I am here!");
+                .title("I am here!")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         marker = mMap.addMarker(options);
-        Log.i(TAG,"Marker placed, zooming.");
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomlevel));
-        Log.i(TAG,"Zoomed in.");
+        Log.i(TAG, "Marker placed");
+
+        final Button zoombutton = (Button)findViewById(R.id.zoombutton);
+
+        zoombutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.i(TAG, "clicked!");
+                Log.i(TAG, String.valueOf(latLng));
+                Log.i(TAG, "moving camera");
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoomlevel));
+            }
+        });
     }
 
     @Override
@@ -294,14 +301,26 @@ public class mainInt extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
+        switch (id){
+            case R.id.action_settings:
+                return true;
+            case R.id.gameMode:
+                switchGameMode(null);
+                break;
+            case R.id.login_toolbar:
+                switchLogin(null);
+                break;
+        }
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-        else if (id == R.id.gameMode) {
-            switchGameMode(null);
-        }
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
+//        else if (id == R.id.gameMode) {
+//            switchGameMode(null);
+//        }
+//        else if (id == R.id.login_toolbar) {
+//            switchLogin(null);
+//        }
 
             return super.onOptionsItemSelected(item);
     }
@@ -332,6 +351,32 @@ public class mainInt extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;*/
         return super.onOptionsItemSelected(menuItem);
+    }
+
+    @Override
+    protected void onResume() {
+        Log.i(TAG, "Onresume");
+        zoomed = false;
+        super.onResume();
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        if (activeNetwork != null && activeNetwork.isConnected()) network_connected = true;
+        if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) gps_connected = true;
+        if (network_connected && gps_connected) connections_working = true;
+        Log.i(TAG,"Connecting apiclient");
+        mGoogleApiClient.connect();
+
+    }
+
+    @Override
+    protected void onPause() {
+        Log.i(TAG, "Paused.");
+        super.onPause();
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
+        }
     }
 }
 
