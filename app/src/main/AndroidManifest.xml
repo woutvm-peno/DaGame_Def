@@ -73,6 +73,10 @@
             android:label="@string/title_activity_register"
             android:parentActivityName=".mainInt">
         </activity>
+        <activity android:name=".minigame3"
+            android:label="minigame">
+
+        </activity>
     </application>
 
 </manifest>

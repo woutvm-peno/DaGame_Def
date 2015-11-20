@@ -21,18 +21,24 @@
         </menu>
     </item>
 
-    <item android:title="minigames">
+    <item android:title="Mini Games">
         <menu>
             <item
                 android:id="@+id/minigame1"
                 android:icon="@drawable/minigames"
-                android:title="minigame1"
+                android:title="Acceleration Game"
                 />
             <item
                 android:id="@+id/minigame2"
                 android:icon="@drawable/minigames"
-                android:title="minigame2"
+                android:title="Combination Game"
                 />
+            <item
+                android:id="@+id/minigame3"
+                android:icon="@drawable/minigames"
+                android:title="Magnetic Field Game">
+
+            </item>
         </menu>
     </item>
 </menu>

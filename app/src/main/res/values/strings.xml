@@ -23,4 +23,18 @@
     <string name="title_activity_register">Register</string>
     <string name="email_text">Email</string>
     <string name="confirm_password_text">Confirm password</string>
+    <string name="start">Start the game!</string>
+    <string name="gyroscope">  </string>
+    <string name="acceleration">  </string>
+    <string name="light">  </string>
+    <string name="explain">Try to have an acceleration of 2.0 m/s² as well as a light intensity of 1000.0 lx and a rotation vector of 3.0 rad/s to win 100 points. </string>
+    <string name="information">Press the button to start</string>
+    <string name="timer"> </string>
+    <string name="explanation">Try to have an acceleration of 4.0 m/s² while on your bike. You win 50 points if you succeed. </string>
+    <string name="startbutton">Start the game</string>
+    <string name="started">Something has changed</string>
+    <string name="exp_magnetic">Try to find a magnetic field with a magnitude of 1.0 mT (= 1000.0 µT). If you do so, you will get 100 points. </string>
+    <string name="song_expl">Try to find or create a very loud noise. If it is loud enough, you will get 50 points!</string>
+    <string name="combination_two">Try to find a magnetic field of 1.0 mT as well as a light intensity of 1000.0 lx!</string>
+
 </resources>
