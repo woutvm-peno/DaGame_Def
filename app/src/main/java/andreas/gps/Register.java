@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class Register extends AppCompatActivity{
 
@@ -35,9 +36,35 @@ public class Register extends AppCompatActivity{
         register_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String password_register_string = password_register_edit.getText().toString();
+                String password_confirm_string = password_confirm_edit.getText().toString();
+                String login_edit_string = login_register_edit.getText().toString();
+                String email_edit_string = email_edit.getText().toString();
+
+                if (password_confirm_string.equals("") || password_register_string.equals("") || login_edit_string.equals("")|| email_edit_string.equals("")){
+                    Toast.makeText(getApplicationContext(), "Please fill in all fields.", Toast.LENGTH_SHORT).show();
+
+                }
+
+                else if (!password_register_string.equals(password_confirm_string)){
+                    Toast.makeText(getApplicationContext(),"Passwords do not match!",Toast.LENGTH_SHORT).show();
+
+                }
+
+                else if (email_edit_string.indexOf("@") <= -1){
+                    Toast.makeText(getApplicationContext(),"Please fill in a valid email adress.",Toast.LENGTH_SHORT).show();
+
+                }
+
+                else{
+                    create_account(login_edit_string,password_register_string,email_edit_string);
+                }
 
             }
         });
     }
 
+    public void create_account(String username, String password, String email){
+
+    }
 }
