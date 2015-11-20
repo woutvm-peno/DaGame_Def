@@ -11,7 +11,7 @@ import android.view.View;
 public class data3 extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.empty_test);
+        setContentView(R.layout.eempty_test);
     }
 
 
