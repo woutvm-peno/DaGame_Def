@@ -132,10 +132,11 @@ public class gameMode extends AppCompatActivity
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
     TextView points_score;
-    public int mypoints;
-    public int targetpoints = 0;
+    TextView hunting;
+    TextView hunted;
+    public int mypoints=0;
+    public int targetpoints;
     public int mymoney;
-    public List<Integer> pointstats;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,9 +158,11 @@ public class gameMode extends AppCompatActivity
         connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         activeNetwork = connectivityManager.getActiveNetworkInfo();
-        preferences = getPreferences(MODE_PRIVATE);
+        preferences = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
         editor = preferences.edit();
         points_score = (TextView) findViewById(R.id.points_score);
+        hunting = (TextView) findViewById(R.id.hunting);
+        hunted = (TextView) findViewById(R.id.hunted);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -170,16 +173,6 @@ public class gameMode extends AppCompatActivity
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(5000)        // 5 seconds, in milliseconds
                 .setFastestInterval(1000); // 1 second, in milliseconds
-
-
-
-        if (savedInstanceState != null) {
-            // Restore value of members from saved state
-            int mCurrentScore = savedInstanceState.getInt(STATE_SCORE);
-            TextView points_score = (TextView) findViewById(R.id.points_score);
-            String points_str = Integer.toString(mCurrentScore);
-            points_score.setText(points_str);}
-        changeTarget();
         Log.i(TAG, "Oncreate success");
 
 
@@ -352,11 +345,27 @@ public class gameMode extends AppCompatActivity
             mGoogleApiClient.disconnect();
         }
 
-
-        String points_str = (String) points_score.getText();
-        int mCurrentScore = Integer.parseInt(points_str);
-        editor.putInt(STATE_SCORE, mCurrentScore);
+        mymoney += mypoints;
+        editor.putInt("mymoney", mymoney);
         editor.apply();
+        notifyOffline("");
+        notifyOffline(TargetID);
+    }
+
+    public void notifyOffline(String receiver){
+        JSONObject data = new JSONObject();
+        try {
+            data.put("sender", myusername);
+            data.put("receiver", receiver);
+            data.put("category", "");
+            data.put("message", NotifyOffline);
+            data.put("points", mypoints);
+            data.put("latitude", loc.latitude);
+            data.put("longitude", loc.longitude);
+        } catch (JSONException e){
+            Log.e(TAG,e.toString());
+        }
+        mServercomm.sendMessage(data);
     }
 
     @Override
@@ -366,15 +375,16 @@ public class gameMode extends AppCompatActivity
         super.onResume();
         if (activeNetwork != null && activeNetwork.isConnected()) network_connected = true;
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) gps_connected = true;
-        Log.i(TAG,"Connecting apiclient");
+        Log.i(TAG, "Connecting apiclient");
         mGoogleApiClient.connect();
-        Log.i(TAG,"getting score");
-        TextView points_score = (TextView) findViewById(R.id.points_score);
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        if (preferences.getInt(STATE_SCORE,0) != 0) {
-            int mCurrentScore = preferences.getInt(STATE_SCORE, 0);
-            String points_str = Integer.toString(mCurrentScore);
-            points_score.setText(points_str);}
+        Log.i(TAG, "getting score");
+        mypoints = 0;
+        mymoney = preferences.getInt("mypoints",0);
+        mypoints += mymoney;
+        points_score.setText(Integer.toString(mypoints));
+        hunted.setText("You are not being hunted");
+        hunting.setText("You are not hunting");
+
         Log.i(TAG, "got score");
 
     }
@@ -458,11 +468,8 @@ public class gameMode extends AppCompatActivity
                 if (killMoveText.getText() == killedText) {
                     killMoveText.setText(killedPointsAddedText);
                     killMoveText.setVisibility(View.GONE);
-                    String points_str = (String) points_score.getText();
-                    int points_int = Integer.parseInt(points_str);
-                    points_int += 100;
-                    points_str = Integer.toString(points_int);
-                    points_score.setText(points_str);
+                    mypoints += 100;
+                    points_score.setText(Integer.toString(mypoints));
                 } else {
                     killMoveText.setText(killedNotText);
                     killMoveText.setVisibility(View.GONE);
@@ -493,11 +500,8 @@ public class gameMode extends AppCompatActivity
                 if (killMoveText.getText() == killedText) {
                     killMoveText.setText(killedPointsAddedText);
                     killMoveText.setVisibility(View.GONE);
-                    String points_str = (String) points_score.getText();
-                    int points_int = Integer.parseInt(points_str);
-                    points_int += 100;
-                    points_str = Integer.toString(points_int);
-                    points_score.setText(points_str);
+                    mypoints += 100;
+                    points_score.setText(Integer.toString(mypoints));
                 } else {
                     killMoveText.setText(killedNotText);
                     killMoveText.setVisibility(View.GONE);
@@ -535,11 +539,8 @@ public class gameMode extends AppCompatActivity
                 if (killMoveText.getText() == killedText) {
                     killMoveText.setText(killedPointsAddedText);
                     killMoveText.setVisibility(View.GONE);
-                    String points_str = (String) points_score.getText();
-                    int points_int = Integer.parseInt(points_str);
-                    points_int += 100;
-                    points_str = Integer.toString(points_int);
-                    points_score.setText(points_str);
+                    mypoints += 100;
+                    points_score.setText(Integer.toString(mypoints));
                 } else {
                     killMoveText.setText(killedNotText);
                     killMoveText.setVisibility(View.GONE);
@@ -581,11 +582,8 @@ public class gameMode extends AppCompatActivity
                 if (killMoveText.getText() == killedText) {
                     killMoveText.setText(killedPointsAddedText);
                     killMoveText.setVisibility(View.GONE);
-                    String points_str = (String) points_score.getText();
-                    int points_int = Integer.parseInt(points_str);
-                    points_int += 100;
-                    points_str = Integer.toString(points_int);
-                    points_score.setText(points_str);
+                    mypoints += 100;
+                    points_score.setText(Integer.toString(mypoints));
                 } else {
                     killMoveText.setText(killedNotText);
                     killMoveText.setVisibility(View.GONE);
@@ -606,6 +604,9 @@ public class gameMode extends AppCompatActivity
             data.put("receiver", "");
             data.put("category", "");
             data.put("message", getPriorities);
+            data.put("points",mypoints);
+            data.put("latitude",loc.latitude);
+            data.put("longitude",loc.longitude);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -621,6 +622,7 @@ public class gameMode extends AppCompatActivity
                 if (!priorityID.equals("")) {
                     Log.i(TAG, "progressdialog changing text");
                     TargetID = priorityID;
+                    notifyHunting();
                     progressDialog.setMessage("Tracking target..");
 
                 } else {
@@ -633,6 +635,21 @@ public class gameMode extends AppCompatActivity
         };
 
         new Handler().postDelayed(changeMessage, 4000);
+    }
+
+    public void notifyHunting(){
+        JSONObject data = new JSONObject();
+        try {
+            data.put("sender", myusername);
+            data.put("receiver", TargetID);
+            data.put("category", pickedTarget);
+            data.put("message", "");
+            data.put("points", mypoints);
+            data.put("latitude", loc.latitude);
+            data.put("longitude", loc.longitude);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void show_alertdialog_target(){
@@ -675,11 +692,8 @@ public class gameMode extends AppCompatActivity
                 if (killMoveText.getText() == killedText) {
                     killMoveText.setText(killedPointsAddedText);
                     killMoveText.setVisibility(View.GONE);
-                    String points_str = (String) points_score.getText();
-                    int points_int = Integer.parseInt(points_str);
-                    points_int += 100;
-                    points_str = Integer.toString(points_int);
-                    points_score.setText(points_str);
+                    mypoints += 100;
+                    points_score.setText(Integer.toString(mypoints));
                 } else {
                     killMoveText.setText(killedNotText);
                     killMoveText.setVisibility(View.GONE);
@@ -715,11 +729,8 @@ public class gameMode extends AppCompatActivity
                 if (killMoveText.getText() == killedText) {
                     killMoveText.setText(killedPointsAddedText);
                     killMoveText.setVisibility(View.GONE);
-                    String points_str = (String) points_score.getText();
-                    int points_int = Integer.parseInt(points_str);
-                    points_int += 100;
-                    points_str = Integer.toString(points_int);
-                    points_score.setText(points_str);
+                    mypoints += 100;
+                    points_score.setText(Integer.toString(mypoints));
                 } else {
                     killMoveText.setText(killedNotText);
                     killMoveText.setVisibility(View.GONE);
@@ -767,18 +778,6 @@ public class gameMode extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle savedInstanceState) {
-        // Save the user's current game state
-        TextView points_score = (TextView) findViewById(R.id.points_score);
-        String points_str = (String) points_score.getText();
-        int mCurrentScore = Integer.parseInt(points_str);
-        savedInstanceState.putInt(STATE_SCORE, mCurrentScore);
-
-        // Always call the superclass so it can save the view hierarchy state
-        super.onSaveInstanceState(savedInstanceState);
-    }
-
     public void requestLocationUpdate(){
         Log.i(TAG,"requestLocationUpdate");
         JSONObject data = new JSONObject();
@@ -787,32 +786,39 @@ public class gameMode extends AppCompatActivity
             data.put("receiver",TargetID);
             data.put("category",locationUpdate);
             data.put("message",getNewLocation);
+            data.put("points",mypoints);
+            data.put("latitude",loc.latitude);
+            data.put("longitude",loc.longitude);
         } catch (JSONException e) {
             e.printStackTrace();
         }
         mServercomm.sendMessage(data);
     }
 
-    public void sendPriority(String sender){
-        Log.i(TAG,"Send priority");
-        //TextView points_score = (TextView) findViewById(R.id.points_score);
-        //String points_str = (String) points_score.getText();
-        //int points_int = Integer.parseInt(points_str);
-        int points_int = 1000;
-        double priority = 2*Math.log10(points_int);
-        priority -= huntedby;
-        JSONObject data = new JSONObject();
-        try{
-            data.put("sender", myusername);
-            data.put("receiver",sender);
-            data.put("category",priorityCategory);
-            data.put("message",Double.toString(priority));
-        } catch (JSONException e) {
-            e.printStackTrace();
+    public void sendPriority(String sender, LatLng targetLocation) {
+        if (CalculationByDistance(loc, targetLocation) < 5000) {
+            Log.i(TAG, "Send priority");
+            //TextView points_score = (TextView) findViewById(R.id.points_score);
+            //String points_str = (String) points_score.getText();
+            //int points_int = Integer.parseInt(points_str);
+            int points_int = 1000;
+            double priority = 2 * Math.log10(points_int);
+            priority -= huntedby;
+            JSONObject data = new JSONObject();
+            try {
+                data.put("sender", myusername);
+                data.put("receiver", sender);
+                data.put("category", priorityCategory);
+                data.put("message", Double.toString(priority));
+                data.put("points", mypoints);
+                data.put("latitude", loc.latitude);
+                data.put("longitude", loc.longitude);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mServercomm.sendMessage(data);
         }
-        mServercomm.sendMessage(data);
     }
-
     public void gotEliminated(String sender, String message){
         Log.i(TAG,"gotEliminated");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -837,8 +843,9 @@ public class gameMode extends AppCompatActivity
             data.put("receiver",sender);
             data.put("category",locationUpdate);
             data.put("message",giveNewLocation);
-            data.put("latitude",Double.toString(loc.latitude));
-            data.put("longitude",Double.toString(loc.longitude));
+            data.put("latitude",loc.latitude);
+            data.put("longitude",loc.longitude);
+            data.put("points",mypoints);
         } catch (JSONException e) {
             Log.i(TAG,"sendLocation exception");
             e.printStackTrace();
@@ -846,45 +853,53 @@ public class gameMode extends AppCompatActivity
         mServercomm.sendMessage(data);
     }
 
-    public void updateTargetLocation(LatLng location){
-        Log.i(TAG,"updating target location");
-        CURRENT_TARGET = location;
-        if (CURRENT_TARGET == null) {
-            Log.i(TAG,"nullexception");
-        }
-        Log.i(TAG,"exception");
-        if (markerTarget == null && circleTarget == null){
-            markerTarget = mMap.addMarker(new MarkerOptions().position(CURRENT_TARGET).title("TARGET"));
-            circleTarget = mMap.addCircle(new CircleOptions()
-                    .center(CURRENT_TARGET)
-                    .radius(5)
-                    .strokeColor(Color.RED));
-        }
-        else{
-            assert markerTarget != null;
-            markerTarget.remove();
-            circleTarget.remove();
+    public void updateTargetLocation(LatLng location) {
+        if (CalculationByDistance(loc, location) > 10000) {
+            hunting.setText("You are hunting " + TargetID + " with " + Integer.toString(targetpoints)+ " points");
+            Log.i(TAG, "updating target location");
+            CURRENT_TARGET = location;
+            if (CURRENT_TARGET == null) {
+                Log.i(TAG, "nullexception");
+            }
+            Log.i(TAG, "exception");
+            if (markerTarget == null && circleTarget == null) {
+                markerTarget = mMap.addMarker(new MarkerOptions().position(CURRENT_TARGET).title("TARGET"));
+                circleTarget = mMap.addCircle(new CircleOptions()
+                        .center(CURRENT_TARGET)
+                        .radius(5)
+                        .strokeColor(Color.RED));
+            } else {
+                assert markerTarget != null;
+                markerTarget.remove();
+                circleTarget.remove();
 
-            markerTarget = mMap.addMarker(new MarkerOptions().position(CURRENT_TARGET).title("TARGET"));
-            circleTarget = mMap.addCircle(new CircleOptions()
-                    .center(CURRENT_TARGET)
-                    .radius(5)
-                    .strokeColor(Color.RED));
+                markerTarget = mMap.addMarker(new MarkerOptions().position(CURRENT_TARGET).title("TARGET"));
+                circleTarget = mMap.addCircle(new CircleOptions()
+                        .center(CURRENT_TARGET)
+                        .radius(5)
+                        .strokeColor(Color.RED));
 
-        }
+            }
 
-        locations.addTargetLocation(CURRENT_TARGET);
+            locations.addTargetLocation(CURRENT_TARGET);
+        } else {
+            changeTarget();
         }
+    }
 
     public void respondToMessage() {
         Log.i(TAG2,"starting respondtomessage");
         List receivedmessage = mServercomm.getLastMessage();
         try {
             String receiver = (String) receivedmessage.get(0);
-
             String sender = (String) receivedmessage.get(1);
             String category = (String) receivedmessage.get(2);
             String message = (String) receivedmessage.get(3);
+            Integer points = (Integer) receivedmessage.get(4);
+            Double Latitude = (Double) receivedmessage.get(4);
+            Double Longitude = (Double) receivedmessage.get(5);
+            targetLocation = new LatLng(Latitude, Longitude);
+
             Log.i(TAG2, "message");
             Log.i(TAG2, message);
             Log.i(TAG2, "category");
@@ -893,14 +908,8 @@ public class gameMode extends AppCompatActivity
             Log.i(TAG2, receiver);
             Log.i(TAG2, "sender");
             Log.i(TAG2, sender);
-            if (receivedmessage.size() > 4) {
-                Log.i(TAG2, "message with location");
-                String Latitudestring = (String) receivedmessage.get(4);
-                String Longitudestring = (String) receivedmessage.get(5);
-                Double Latitude = Double.parseDouble(Latitudestring);
-                Double Longitude = Double.parseDouble(Longitudestring);
-                targetLocation = new LatLng(Latitude, Longitude);
-            }
+            Log.i(TAG2, "points");
+            Log.i(TAG2, points.toString());
             if (receiver.equals("") && !(sender.equals(myusername))) {
                 Log.i(TAG2, "Condition 1");
                 if (message.equals(NotifyOffline) && sender.equals(TargetID)) {
@@ -908,7 +917,7 @@ public class gameMode extends AppCompatActivity
                     changeTarget();
                 } else if (message.equals(getPriorities)) {
                     Log.i(TAG2, "Condition 1.2");
-                    sendPriority(sender);
+                    sendPriority(sender,targetLocation);
                 }
             } else if (receiver.equals(myusername)) {
                 Log.i(TAG2, "Condition 2");
@@ -918,9 +927,15 @@ public class gameMode extends AppCompatActivity
                 } else if (category.equals(pickedTarget)) {
                     Log.i(TAG2, "Condition 2.2");
                     huntedby += 1;
-                } else if (category.equals(droppedTarget)) {
+                    hunted.setText("You are being hunted by "+Integer.toString(huntedby)+" people");
+                } else if (category.equals(NotifyOffline)) {
                     Log.i(TAG2, "Condition 2.3");
                     huntedby -= 1;
+                    if (huntedby == 0){
+                        hunted.setText("You are not being hunted");
+                    }else{
+                        hunted.setText("You are being hunted by "+Integer.toString(huntedby)+" people");
+                    }
                 } else if (category.equals(locationUpdate)) {
                     Log.i(TAG2, "Condition 2.4");
                     if (message.equals(getNewLocation)) {
@@ -930,11 +945,11 @@ public class gameMode extends AppCompatActivity
                         Log.i(TAG2, "Condition 2.4.2");
                         progressDialog.dismiss();
                         missedLocationUpdates = 0;
+                        targetpoints = points;
                         updateTargetLocation(targetLocation);
                     }
                 } else if (category.equals(priorityCategory)) {
                     Log.i(TAG2, "Condition 2.5");
-                    double abc = Double.parseDouble(message);
                     Log.i(TAG2, "Condition 2.5 part 2");
                     if (Double.parseDouble(message) > prioritylevel) {
                         Log.i(TAG2, "Condition 2.5.1");

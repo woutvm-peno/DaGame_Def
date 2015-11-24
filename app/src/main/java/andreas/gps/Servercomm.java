@@ -28,7 +28,7 @@ import io.socket.emitter.Emitter;
 
 public class Servercomm extends Activity {
 
-    public List<String> receivedmessage = new ArrayList<>();
+    public List<Object> receivedmessage = new ArrayList<>();
     String dataToPut;
     String TAG = "abcd";
 
@@ -194,20 +194,21 @@ public class Servercomm extends Activity {
                     String receiver;
                     String category;
                     String sender;
-                    String latitude = null;
-                    String longitude = null;
+                    Integer points;
+                    Double latitude;
+                    Double longitude;
                     try {
                         //you should define the parameter of getString according to your data content
                         message = data.getString("message");
                         receiver = data.getString("receiver");
                         category = data.getString("category");
                         sender = data.getString("sender");
+                        points = data.getInt("points");
                         Log.i(TAG,sender);
                         Log.i(TAG, message);
-                        if (data.has("latitude")) {
-                            latitude = data.getString("latitude");
-                            longitude = data.getString("longitude");
-                        }
+                        latitude = data.getDouble("latitude");
+                        longitude = data.getDouble("longitude");
+
                     } catch (JSONException e) {
                         Log.i(TAG, "exception");
                         Log.i(TAG, e.toString());
@@ -218,10 +219,9 @@ public class Servercomm extends Activity {
                     receivedmessage.add(sender);
                     receivedmessage.add(category);
                     receivedmessage.add(message);
-                    if (latitude != null) {
-                        receivedmessage.add(latitude);
-                        receivedmessage.add(longitude);
-                    }
+                    receivedmessage.add(points);
+                    receivedmessage.add(latitude);
+                    receivedmessage.add(longitude);
                     mCallback.respondToMessage();
 
 
