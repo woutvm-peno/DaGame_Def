@@ -1,8 +1,5 @@
 package andreas.gps;
 
-// insert here the main game activity
-//holoholo
-
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
@@ -24,8 +21,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +49,7 @@ import java.util.Calendar;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -69,11 +69,9 @@ public class gameMode extends AppCompatActivity
     private Circle circleLoc;
     private Circle circleTarget;
     private MyLocations locations = new MyLocations();
-    private int r = 5;
+    private double r = 5.0;
     private static final String TAG = "abcd";
     private LatLng CURRENT_TARGET;
-    private LatLng TARGET_MAIN = new LatLng(50.864164, 4.678891);
-    private LatLng TARGET_SEC = new LatLng(50.864021, 4.678460);
     private Marker markerTarget;
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
@@ -86,11 +84,13 @@ public class gameMode extends AppCompatActivity
     public float zoomlevel = 18;
     public boolean zoomed = false;
     public LatLng loc;
-    static final String STATE_SCORE = "playerScore";
+    public final String STATE_SCORE = "playerScore";
     Calendar c = Calendar.getInstance();
     private double mySpeed = 0;
     private int kill_button_counter = 0;
+
     //text kkillmoves
+    public String TAG2 = "abcdef";
     private String killedText = "kill confirmed";
     private String killedPointsAddedText = "point added!";
     private String killedNotText = "You missed try again!";
@@ -106,38 +106,36 @@ public class gameMode extends AppCompatActivity
     private double killmoveSpeedValue = 6.4;
     private double killmovelightValue = 2;
     private double killmovePressButtonValue = 5;
-    public String playerscategory = "playerscategory";
-    public String targetchange = "targetchange";
-    public String hunting = "hunting";
-    public String myusername;
+    private long killmovetimer = 30000;
+    public String myusername = "wout";
     Servercomm mServercomm = new Servercomm();
-    public String NotifyOnline = "I'm online";
-    public String NotifyOffline = "I'm offline";
-    public String askNumberOfPlayers = "Who is online?";
-    public int numberOfOnlinePlayers = 0;
+    public String NotifyOffline = "NotifyOffline";
     public String TargetID = "";
-    public String getPriorities = "Send priorities";
-    public String eliminated = "You're eliminated";
-    public String pickedTarget = "You're new target";
+    public String getPriorities = "getPriorities";
+    public String eliminated = "eliminated";
+    public String pickedTarget = "pickedTarget";
     public int huntedby = 0;
-    public String droppedTarget = "Dropped target";
-    public String locationUpdate = "Update location";
+    public String droppedTarget = "droppedTarget";
+    public String locationUpdate = "locationUpdate";
     public String priorityID = "";
     private Handler mHandler = new Handler();
     public double prioritylevel = 0;
     public LatLng targetLocation;
-    public String priorityCategory = "Priority";
-    public String getNewLocation = "Request new location";
-    public String giveNewLocation = "Giving new location";
-
-
-
-
-
-
-
-
-
+    public String priorityCategory = "priorityCategory";
+    public String getNewLocation = "getNewLocation";
+    public String giveNewLocation = "giveNewLocation";
+    public ProgressDialog progressDialog;
+    public int missedLocationUpdates = 0;
+    ConnectivityManager connectivityManager;
+    LocationManager locationManager;
+    NetworkInfo activeNetwork;
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
+    TextView points_score;
+    public int mypoints;
+    public int targetpoints = 0;
+    public int mymoney;
+    public List<Integer> pointstats;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,14 +147,19 @@ public class gameMode extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_low_in_rank);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        Servercomm.registerCallback(this);
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        activeNetwork = connectivityManager.getActiveNetworkInfo();
+        preferences = getPreferences(MODE_PRIVATE);
+        editor = preferences.edit();
+        points_score = (TextView) findViewById(R.id.points_score);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -168,23 +171,6 @@ public class gameMode extends AppCompatActivity
                 .setInterval(5000)        // 5 seconds, in milliseconds
                 .setFastestInterval(1000); // 1 second, in milliseconds
 
-        final Button zoombutton = (Button)findViewById(R.id.zoombutton);
-
-        final Button targetbutton = (Button)findViewById(R.id.targetbutton);
-
-
-        zoombutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.i(TAG, "clicked!");
-                Log.i(TAG, String.valueOf(loc));
-                if (loc != null) {
-                    Log.i(TAG, "moving camera");
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, zoomlevel));
-                }
-            }
-        });
-
 
 
         if (savedInstanceState != null) {
@@ -193,22 +179,11 @@ public class gameMode extends AppCompatActivity
             TextView points_score = (TextView) findViewById(R.id.points_score);
             String points_str = Integer.toString(mCurrentScore);
             points_score.setText(points_str);}
-        mHandler = new Handler();
-        startRequestingLocationUpdates();
-
-
-            Log.i(TAG, "Oncreate success");
+        changeTarget();
+        Log.i(TAG, "Oncreate success");
 
 
     }
-
-    private void startRequestingLocationUpdates() {
-        targetLocationRequest.run();
-    }
-
-
-
-
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -219,9 +194,10 @@ public class gameMode extends AppCompatActivity
 
 
     }
+
     public void onConnected(Bundle bundle) {
         Log.i(TAG, "Location services connected.");
-        if (connections_working){
+        if (network_connected && gps_connected){
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest,this);
             Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             while (location == null){
@@ -244,7 +220,7 @@ public class gameMode extends AppCompatActivity
         }}
 
     public void show_alertdialog_network() {
-        Log.i(TAG,"show_alertdialog_network");
+        Log.i(TAG, "show_alertdialog_network");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("No network!");
         builder.setMessage("Please turn on wifi or network data.");
@@ -274,7 +250,7 @@ public class gameMode extends AppCompatActivity
     }
 
     public void show_alertdialog_gps() {
-        Log.i(TAG,"show_alertdialog_gps");
+        Log.i(TAG, "show_alertdialog_gps");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("No gps!");
         builder.setMessage("Please turn on location services.");
@@ -293,7 +269,6 @@ public class gameMode extends AppCompatActivity
         alertDialog.setCanceledOnTouchOutside(false);
         builder.show();
     }
-
 
     private void handleNewLocation(Location location) {
         Log.d(TAG, "handling New Location");
@@ -322,7 +297,6 @@ public class gameMode extends AppCompatActivity
             }
         }
 
-        addPoints(locations.getMyLocation(locations.getMySize() - 1), locations.getTargetLocation(locations.getTargetSize() - 1));
 
         if (mymarker != null) {
             mymarker.remove();
@@ -333,6 +307,10 @@ public class gameMode extends AppCompatActivity
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
         mymarker = mMap.addMarker(options);
         Log.i(TAG, "Marker placed.");
+
+        if (!TargetID.equals("")){
+            addPoints(loc,CURRENT_TARGET);
+        }
     }
 
     @Override
@@ -374,13 +352,11 @@ public class gameMode extends AppCompatActivity
             mGoogleApiClient.disconnect();
         }
 
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        TextView points_score = (TextView) findViewById(R.id.points_score);
+
         String points_str = (String) points_score.getText();
         int mCurrentScore = Integer.parseInt(points_str);
         editor.putInt(STATE_SCORE, mCurrentScore);
-        editor.apply();
+        editor.commit();
     }
 
     @Override
@@ -388,45 +364,46 @@ public class gameMode extends AppCompatActivity
         Log.i(TAG, "Onresume");
         zoomed = false;
         super.onResume();
-        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-        LocationManager locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         if (activeNetwork != null && activeNetwork.isConnected()) network_connected = true;
         if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) gps_connected = true;
-        if (network_connected && gps_connected) connections_working = true;
         Log.i(TAG,"Connecting apiclient");
         mGoogleApiClient.connect();
-
+        Log.i(TAG,"getting score");
         TextView points_score = (TextView) findViewById(R.id.points_score);
         SharedPreferences preferences = getPreferences(MODE_PRIVATE);
         if (preferences.getInt(STATE_SCORE,0) != 0) {
             int mCurrentScore = preferences.getInt(STATE_SCORE, 0);
             String points_str = Integer.toString(mCurrentScore);
             points_score.setText(points_str);}
+        Log.i(TAG, "got score");
 
     }
 
     public double CalculationByDistance(LatLng StartP, LatLng EndP) {
         Log.i(TAG,"CalculationByDistance");
         int Radius = 6371000;// radius of earth in Km
-        double lat1 = StartP.latitude;
-        double lat2 = EndP.latitude;
-        double lon1 = StartP.longitude;
-        double lon2 = EndP.longitude;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                + Math.cos(Math.toRadians(lat1))
-                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
-                * Math.sin(dLon / 2);
-        double c = 2 * Math.asin(Math.sqrt(a));
-        return Radius * c;
+        try {
+            double lat1 = StartP.latitude;
+            double lat2 = EndP.latitude;
+            double lon1 = StartP.longitude;
+            double lon2 = EndP.longitude;
+            double dLat = Math.toRadians(lat2 - lat1);
+            double dLon = Math.toRadians(lon2 - lon1);
+            double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                    + Math.cos(Math.toRadians(lat1))
+                    * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                    * Math.sin(dLon / 2);
+            double c = 2 * Math.asin(Math.sqrt(a));
+            return Radius * c;
+        } catch(NullPointerException e) {
+            return 20.0;
+        }
     }
 
     public void addPoints(LatLng location, LatLng target) {
         if (CalculationByDistance(location, target) <= r*2) {
             killMovegenerator(null);
-            changeTarget(TARGET_MAIN,TARGET_SEC);
+            changeTarget();
         }
     }
 
@@ -454,7 +431,7 @@ public class gameMode extends AppCompatActivity
 
     public void killMoveAccelor(View view) {
 
-        CountDownTimer start = new CountDownTimer(5000, 200) {
+        new CountDownTimer(killmovetimer, 200) {
             TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
             TextView points_score = (TextView) findViewById(R.id.points_score);
             public Sensor_SAVE sensorsave = new Sensor_SAVE();
@@ -464,10 +441,15 @@ public class gameMode extends AppCompatActivity
                 killMoveText.setVisibility(View.VISIBLE);
                 killMoveText.setText(killmoveAcellorText + millisUntilFinished / 1000);
                 sensorcol.start(getApplicationContext());
-                if (sensorsave.getAccelerox() > killmoveAcellorValue) {
-                    killMoveText.setText(killedText);
+                try {
+
+                    if (sensorsave.getAccelerox() > killmoveAcellorValue) {
+                        killMoveText.setText(killedText);
 
 
+                    }
+                } catch (EmptyStackException e){
+                    Log.i(TAG,e.toString());
                 }
             }
 
@@ -493,7 +475,7 @@ public class gameMode extends AppCompatActivity
 
     public void killMoveSound(View view) {
 
-        CountDownTimer start = new CountDownTimer(5000, 200) {
+        new CountDownTimer(killmovetimer, 200) {
             TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
             TextView points_score = (TextView) findViewById(R.id.points_score);
             SoundAct soundact = new SoundAct(0);
@@ -503,7 +485,6 @@ public class gameMode extends AppCompatActivity
                 soundact.getMaxsound();
                 if (soundact.getMaxsound() > killmoveSoundValue) {
                     killMoveText.setText(killedText);
-
 
                 }
             }
@@ -526,9 +507,10 @@ public class gameMode extends AppCompatActivity
         }.start();
 
     }
+
     public void killMoveGyroscoop(View view) {
 
-        CountDownTimer start = new CountDownTimer(5000, 200) {
+        new CountDownTimer(killmovetimer, 200) {
             TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
             TextView points_score = (TextView) findViewById(R.id.points_score);
             public Sensor_SAVE sensorsave = new Sensor_SAVE();
@@ -538,10 +520,14 @@ public class gameMode extends AppCompatActivity
                 killMoveText.setVisibility(View.VISIBLE);
                 killMoveText.setText(killmoveGyroText + millisUntilFinished / 1000);
                 sensorcol.start(getApplicationContext());
-                if (sensorsave.getGyroscoopx() > killmoveGyroValue) {
-                    killMoveText.setText(killedText);
+                try {
+                    if (sensorsave.getGyroscoopx() > killmoveGyroValue) {
+                        killMoveText.setText(killedText);
 
 
+                    }
+                } catch (EmptyStackException e){
+                    Log.i(TAG,e.toString());
                 }
             }
             public void onFinish() {
@@ -563,9 +549,10 @@ public class gameMode extends AppCompatActivity
         }.start();
 
     }
+
     public void killMovelight(View view) {
 
-        CountDownTimer start = new CountDownTimer(5000, 200) {
+        new CountDownTimer(killmovetimer, 200) {
             TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
             TextView points_score = (TextView) findViewById(R.id.points_score);
             public Sensor_SAVE sensorsave = new Sensor_SAVE();
@@ -575,11 +562,17 @@ public class gameMode extends AppCompatActivity
                 killMoveText.setVisibility(View.VISIBLE);
                 killMoveText.setText(killmovelightText + millisUntilFinished / 1000);
                 sensorcol.start(getApplicationContext());
-                if (sensorsave.getLicht() < killmovelightValue) {
-                    killMoveText.setText(killedText);
+                try {
+
+                    if (sensorsave.getLicht() < killmovelightValue) {
+                        killMoveText.setText(killedText);
 
 
-                }}
+                    }
+                } catch (EmptyStackException e) {
+                    Log.i(TAG, e.toString());
+                }
+            }
 
 
 
@@ -604,8 +597,9 @@ public class gameMode extends AppCompatActivity
     }
 
     public void changeTarget() {
-        Log.i(TAG,"changeTarget");
+        Log.i(TAG, "changeTarget");
         prioritylevel = 0;
+        priorityID = "";
         JSONObject data = new JSONObject();
         try {
             data.put("sender", myusername);
@@ -616,33 +610,56 @@ public class gameMode extends AppCompatActivity
             e.printStackTrace();
         }
         mServercomm.sendMessage(data);
-        final ProgressDialog progressDialog = new ProgressDialog(this);
+        Log.i(TAG, "starting progressdialog");
+        progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Picking target..");
         progressDialog.show();
-        final Timer t = new Timer();
-        t.schedule(new TimerTask() {
+        Runnable changeMessage = new Runnable() {
+
+            @Override
             public void run() {
-                progressDialog.dismiss();
-                t.cancel();
+                if (!priorityID.equals("")) {
+                    Log.i(TAG, "progressdialog changing text");
+                    TargetID = priorityID;
+                    progressDialog.setMessage("Tracking target..");
+
+                } else {
+                    Log.i(TAG, "no target found yet");
+                    progressDialog.dismiss();
+                    show_alertdialog_target();
+                }
+                targetLocationRequest.run();
             }
-        }, 5000);
-        TargetID = priorityID;
-        requestLocationUpdate();
-        progressDialog.setMessage("Tracking target..");
-        progressDialog.show();
-        t.schedule(new TimerTask() {
-            public void run() {
-                progressDialog.dismiss();
-                t.cancel();
-            }
-        }, 5000);
+        };
+
+        new Handler().postDelayed(changeMessage, 4000);
     }
 
+    public void show_alertdialog_target(){
+        Log.i(TAG, "show_alertdialog_target");
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("No target found :(");
+        builder.setMessage("Don't quit. We will try again in a minute.");
+        builder.setPositiveButton("Wait for another player", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Log.i(TAG, "Continue playing");
+            }
+        });
+        builder.setNegativeButton("Quit gamemode", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Log.i(TAG, "Quit gamemode");
+                finish();
+            }
+        });
 
+        Dialog alertDialog = builder.create();
+        alertDialog.setCanceledOnTouchOutside(false);
+        builder.show();
+    }
 
     public void killMoveSpeed(View view) {
 
-        CountDownTimer start = new CountDownTimer(5000, 200) {
+        new CountDownTimer(killmovetimer, 200) {
             TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
             TextView points_score = (TextView) findViewById(R.id.points_score);
 
@@ -677,7 +694,7 @@ public class gameMode extends AppCompatActivity
     }
 
     public void killMovePressButton(View view) {
-        CountDownTimer start = new CountDownTimer(5000, 200) {
+        new CountDownTimer(killmovetimer, 200) {
             Button kill_button = (Button) findViewById(R.id.kill_button);
             TextView killMoveText = (TextView) findViewById(R.id.killMoveText);
             TextView points_score = (TextView) findViewById(R.id.points_score);
@@ -695,6 +712,7 @@ public class gameMode extends AppCompatActivity
 
             public void onFinish() {
                 kill_button_counter = 0;
+                kill_button.setVisibility(View.GONE);
                 if (killMoveText.getText() == killedText) {
                     killMoveText.setText(killedPointsAddedText);
                     killMoveText.setVisibility(View.GONE);
@@ -711,37 +729,6 @@ public class gameMode extends AppCompatActivity
             }
         }.start();
 
-    }
-
-    public void changeTarget(LatLng Target1, LatLng Target2){
-        if (CURRENT_TARGET != Target1){
-            CURRENT_TARGET = Target1;
-        }
-        else{
-            CURRENT_TARGET = Target2;
-        }
-
-        if (markerTarget == null && circleTarget == null){
-            markerTarget = mMap.addMarker(new MarkerOptions().position(CURRENT_TARGET).title("TARGET"));
-            circleTarget = mMap.addCircle(new CircleOptions()
-                    .center(CURRENT_TARGET)
-                    .radius(5)
-                    .strokeColor(Color.RED));
-        }
-        else{
-            assert markerTarget != null;
-            markerTarget.remove();
-            circleTarget.remove();
-
-            markerTarget = mMap.addMarker(new MarkerOptions().position(CURRENT_TARGET).title("TARGET"));
-            circleTarget = mMap.addCircle(new CircleOptions()
-                    .center(CURRENT_TARGET)
-                    .radius(5)
-                    .strokeColor(Color.RED));
-
-        }
-
-        locations.addTargetLocation(CURRENT_TARGET);
     }
 
     public void zoombutton(View view) {
@@ -765,7 +752,6 @@ public class gameMode extends AppCompatActivity
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds,100));
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -777,10 +763,19 @@ public class gameMode extends AppCompatActivity
         if (id == R.id.action_settings) {
             return true;
         }
-
+        else if (id == R.id.toolbar_shop) {
+            switchShop(null);
+        }
 
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+        public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+            getMenuInflater().inflate(R.menu.toolbar_buttons_gamemode, menu);
+            return true;
+        }
 
     @Override
     public void onSaveInstanceState(Bundle savedInstanceState) {
@@ -794,6 +789,10 @@ public class gameMode extends AppCompatActivity
         super.onSaveInstanceState(savedInstanceState);
     }
 
+    public void switchShop(View view) {
+        Intent intent = new Intent(this, Shop.class);
+        startActivity(intent);
+    }
 
     public void requestLocationUpdate(){
         Log.i(TAG,"requestLocationUpdate");
@@ -811,9 +810,10 @@ public class gameMode extends AppCompatActivity
 
     public void sendPriority(String sender){
         Log.i(TAG,"Send priority");
-        TextView points_score = (TextView) findViewById(R.id.points_score);
-        String points_str = (String) points_score.getText();
-        int points_int = Integer.parseInt(points_str);
+        //TextView points_score = (TextView) findViewById(R.id.points_score);
+        //String points_str = (String) points_score.getText();
+        //int points_int = Integer.parseInt(points_str);
+        int points_int = 1000;
         double priority = 2*Math.log10(points_int);
         priority -= huntedby;
         JSONObject data = new JSONObject();
@@ -842,20 +842,20 @@ public class gameMode extends AppCompatActivity
         Dialog alertDialog = builder.create();
         alertDialog.setCanceledOnTouchOutside(false);
         builder.show();
-        }
+    }
 
     public void sendLocation(String sender){
         Log.i(TAG,"sending location");
-        LatLng myloc = locations.getLastLocation();
         JSONObject data = new JSONObject();
         try{
             data.put("sender", myusername);
             data.put("receiver",sender);
             data.put("category",locationUpdate);
             data.put("message",giveNewLocation);
-            data.put("latitude",Double.toString(myloc.latitude));
-            data.put("longitude",Double.toString(myloc.longitude));
+            data.put("latitude",Double.toString(loc.latitude));
+            data.put("longitude",Double.toString(loc.longitude));
         } catch (JSONException e) {
+            Log.i(TAG,"sendLocation exception");
             e.printStackTrace();
         }
         mServercomm.sendMessage(data);
@@ -864,6 +864,10 @@ public class gameMode extends AppCompatActivity
     public void updateTargetLocation(LatLng location){
         Log.i(TAG,"updating target location");
         CURRENT_TARGET = location;
+        if (CURRENT_TARGET == null) {
+            Log.i(TAG,"nullexception");
+        }
+        Log.i(TAG,"exception");
         if (markerTarget == null && circleTarget == null){
             markerTarget = mMap.addMarker(new MarkerOptions().position(CURRENT_TARGET).title("TARGET"));
             circleTarget = mMap.addCircle(new CircleOptions()
@@ -885,63 +889,103 @@ public class gameMode extends AppCompatActivity
         }
 
         locations.addTargetLocation(CURRENT_TARGET);
-        }
-
-
+    }
 
     public void respondToMessage() {
-        Log.i(TAG,"starting respondtomessage");
+        Log.i(TAG2,"starting respondtomessage");
         List receivedmessage = mServercomm.getLastMessage();
-        String receiver = (String) receivedmessage.get(0);
-        String sender = (String) receivedmessage.get(1);
-        String category = (String) receivedmessage.get(2);
-        String message = (String) receivedmessage.get(3);
+        try {
+            String receiver = (String) receivedmessage.get(0);
 
-        if (receivedmessage.size()>4) {
-            String Latitudestring = (String) receivedmessage.get(4);
-            String Longitudestring = (String) receivedmessage.get(5);
-            Double Latitude = Double.parseDouble(Latitudestring);
-            Double Longitude = Double.parseDouble(Longitudestring);
-            targetLocation = new LatLng(Latitude, Longitude);
-        }
-        if (receiver == ""){
-            if (message == NotifyOffline && sender == TargetID){
-                changeTarget();
-            } else if (message == getPriorities) {
-                sendPriority(sender);
+            String sender = (String) receivedmessage.get(1);
+            String category = (String) receivedmessage.get(2);
+            String message = (String) receivedmessage.get(3);
+            Log.i(TAG2, "message");
+            Log.i(TAG2, message);
+            Log.i(TAG2, "category");
+            Log.i(TAG2, category);
+            Log.i(TAG2, "receiver");
+            Log.i(TAG2, receiver);
+            Log.i(TAG2, "sender");
+            Log.i(TAG2, sender);
+            if (receivedmessage.size() > 4) {
+                Log.i(TAG2, "message with location");
+                String Latitudestring = (String) receivedmessage.get(4);
+                String Longitudestring = (String) receivedmessage.get(5);
+                Double Latitude = Double.parseDouble(Latitudestring);
+                Double Longitude = Double.parseDouble(Longitudestring);
+                targetLocation = new LatLng(Latitude, Longitude);
             }
-        else if (receiver == myusername){
-            if (category == eliminated) {
-                gotEliminated(sender, message);
-            } else if (category == pickedTarget){
-                huntedby += 1;
-            } else if (category == droppedTarget){
-                huntedby -= 1;
-            } else if (category == locationUpdate) {
-                if (message == getNewLocation){
-                    sendLocation(sender);
+            if (receiver.equals("") && !(sender.equals(myusername))) {
+                Log.i(TAG2, "Condition 1");
+                if (message.equals(NotifyOffline) && sender.equals(TargetID)) {
+                    Log.i(TAG2, "Condition 1.1");
+                    changeTarget();
+                } else if (message.equals(getPriorities)) {
+                    Log.i(TAG2, "Condition 1.2");
+                    sendPriority(sender);
                 }
-                else if (message == giveNewLocation){
-                    updateTargetLocation(targetLocation);
+            } else if (receiver.equals(myusername)) {
+                Log.i(TAG2, "Condition 2");
+                if (category.equals(eliminated)) {
+                    Log.i(TAG2, "Condition 2.1");
+                    gotEliminated(sender, message);
+                } else if (category.equals(pickedTarget)) {
+                    Log.i(TAG2, "Condition 2.2");
+                    huntedby += 1;
+                } else if (category.equals(droppedTarget)) {
+                    Log.i(TAG2, "Condition 2.3");
+                    huntedby -= 1;
+                } else if (category.equals(locationUpdate)) {
+                    Log.i(TAG2, "Condition 2.4");
+                    if (message.equals(getNewLocation)) {
+                        Log.i(TAG2, "Condition 2.4.1");
+                        sendLocation(sender);
+                    } else if (message.equals(giveNewLocation)) {
+                        Log.i(TAG2, "Condition 2.4.2");
+                        progressDialog.dismiss();
+                        missedLocationUpdates = 0;
+                        updateTargetLocation(targetLocation);
+                    }
+                } else if (category.equals(priorityCategory)) {
+                    Log.i(TAG2, "Condition 2.5");
+                    double abc = Double.parseDouble(message);
+                    Log.i(TAG2, "Condition 2.5 part 2");
+                    if (Double.parseDouble(message) > prioritylevel) {
+                        Log.i(TAG2, "Condition 2.5.1");
+                        prioritylevel = Double.parseDouble(message);
+                        priorityID = sender;
+                    }
                 }
-            } else if (category == priorityCategory){
-                if (Double.parseDouble(message) > prioritylevel){
-                    prioritylevel = Double.parseDouble(message);
-                    priorityID = sender;
-                }
+            } else {
+                Log.i(TAG2, "Condition 3");
             }
-        }
-
+        } catch (IndexOutOfBoundsException e){
+            Log.i(TAG,e.toString());
         }
     }
+
     private Runnable targetLocationRequest = new Runnable() {
         @Override
         public void run() {
-            Log.i(TAG,"running targetLocationRequest");
-            requestLocationUpdate();
-            mHandler.postDelayed(targetLocationRequest,30000);
+            Log.i(TAG, "running targetLocationRequest");
+            if (!TargetID.equals("") && missedLocationUpdates < 2){
+                Log.i(TAG, "request LocationUpdate");
+                requestLocationUpdate();
+                mHandler.postDelayed(targetLocationRequest,20000);
+            } else if (missedLocationUpdates < 2){
+                Log.i(TAG, "Track new target");
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        changeTarget();
+                    }
+                },60000);
+            } else {
+                Toast.makeText(gameMode.this, "Target not responding, getting new target", Toast.LENGTH_SHORT).show();
+                changeTarget();
+            }
         }};}
-
 
 
 

@@ -19,6 +19,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.socket.client.IO;
@@ -153,7 +154,6 @@ public class Servercomm extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            return;
         }
     }
 
@@ -166,7 +166,6 @@ public class Servercomm extends Activity {
 
         @Override
         protected void onPostExecute(String result) {
-            return;
         }
     }
 
@@ -184,7 +183,6 @@ public class Servercomm extends Activity {
     private Emitter.Listener onNewMessage = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            Log.i(TAG, "message received 1");
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
@@ -194,29 +192,36 @@ public class Servercomm extends Activity {
                     String receiver;
                     String category;
                     String sender;
-                    String latitude;
-                    String longitude;
-                    Log.i(TAG,"message received 2");
+                    String latitude = null;
+                    String longitude = null;
                     try {
+                        //you should define the parameter of getString according to your data content
                         message = data.getString("message");
                         receiver = data.getString("receiver");
                         category = data.getString("category");
                         sender = data.getString("sender");
-                        latitude = data.getString("latitude");
-                        longitude = data.getString("longitude");
+                        Log.i(TAG,sender);
+                        Log.i(TAG, message);
+                        if (data.has("latitude")) {
+                            latitude = data.getString("latitude");
+                            longitude = data.getString("longitude");
+                        }
                     } catch (JSONException e) {
+                        Log.i(TAG, "exception");
+                        Log.i(TAG, e.toString());
                         return;
                     }
-
-                    Log.i(TAG, "new message received");
                     receivedmessage.clear();
                     receivedmessage.add(receiver);
                     receivedmessage.add(sender);
                     receivedmessage.add(category);
                     receivedmessage.add(message);
-                    receivedmessage.add(latitude);
-                    receivedmessage.add(longitude);
+                    if (latitude != null) {
+                        receivedmessage.add(latitude);
+                        receivedmessage.add(longitude);
+                    }
                     mCallback.respondToMessage();
+
 
 
                 }

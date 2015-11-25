@@ -9,7 +9,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
+import java.util.EmptyStackException;
 import java.util.Stack;
 
 
@@ -19,6 +21,7 @@ import java.util.Stack;
  */
 
 public class SensorCollector implements SensorEventListener {
+    public String TAG = "abcd";
     private static SensorManager sensorManager;
     public void start(Context context) {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
@@ -68,7 +71,11 @@ public class SensorCollector implements SensorEventListener {
     }
 
     public void set(SensorActor SensorActor){
-        SensorActors.pop();
+        try {
+            SensorActors.pop();
+        } catch (EmptyStackException e){
+            Log.i(TAG, e.toString());
+        }
         SensorActors.push(SensorActor);
     }
 
