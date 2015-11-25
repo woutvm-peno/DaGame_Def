@@ -12,35 +12,37 @@ import android.widget.Toast;
 /**
  * Created by Steven on 20/11/2015.
  */
-public class minigame1 extends AppCompatActivity {
+public class minigame3 extends AppCompatActivity {
 
-    public SensorActAcc Accelerometer;
-    public double goal = 4.0;
+    public SensorActMF MagneticField;
+    public double goal = 1000.0;
     TextView explain;
-
-
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.empty_test);
-        Accelerometer = new SensorActAcc(this);
+        setContentView(R.layout.empty_test3);
+        MagneticField = new SensorActMF(this);
 
     }
 
+    public void goBack(View view) {
+        Intent intent = new Intent(this, mainInt.class);
+        startActivity(intent);
+    }
     public void update(String norm){
         TextView acceleration_show = (TextView) findViewById(R.id.acceleration);
-        acceleration_show.setText("Acceleration: " + norm + " m/s²");
+        acceleration_show.setText("Magnetic field: " + norm + " µT");
     }
 
     public void update_two(String norm) {
         TextView max_acc = (TextView) findViewById(R.id.textView);
-        max_acc.setText("Max acceleration: " + norm + " m/s²");
+        max_acc.setText("Max. Magnetic Field: " + norm + " µT");
     }
 
 
     public void startGame(View view) {
 
-        Accelerometer.start(getApplicationContext());
+        MagneticField.start(getApplicationContext());
         explain = (TextView) findViewById(R.id.explanation);
         explain.setText("Game has started");
         Button button = (Button) findViewById(R.id.button);
@@ -50,13 +52,12 @@ public class minigame1 extends AppCompatActivity {
             TextView counter = (TextView) findViewById(R.id.counter);
             TextView acceleration_show = (TextView) findViewById(R.id.acceleration);
             TextView motivation = (TextView) findViewById(R.id.textView2);
-            TextView max_acc_view = (TextView) findViewById(R.id.textView);
             boolean value = false;
-            boolean fair_play = true;
 
 
 
             public void onTick(long millisUntilFinished) {
+                motivation.setText("");
                 counter.setText("Time remaining: " + millisUntilFinished / 1000);
 
 
@@ -64,27 +65,19 @@ public class minigame1 extends AppCompatActivity {
 
             public void onFinish() {
                 counter.setText("Done!");
-                String max_acc = Accelerometer.max_norm;
-                Double acc_max = Accelerometer.acc_max;
+                Double acc_max = MagneticField.acc_max;
                 if (acc_max > goal) {
                     value = true;
                 }
-                if (acc_max > 10.0) {
-                    fair_play = false;
-                }
-                Accelerometer.stop();
-                acceleration_show.setText("");
-                max_acc_view.setText("Max. acceleration: " + max_acc + " m/s²");
-                if (value && fair_play) {
+                MagneticField.stop();
+                acceleration_show.setText("The game has ended");
+                if (value) {
                     Toast.makeText(getApplicationContext(), "You won the game and got 10 points", Toast.LENGTH_LONG).show();
                     motivation.setText("Well done! You won!");
 
                 } else if (!value) {
-                    Toast.makeText(getApplicationContext(),"You lost the game", Toast.LENGTH_LONG).show();
-                    motivation.setText("Hmm... Maybe next time!");
-                } else {
-                    Toast.makeText(getApplicationContext(),"You weren't on your bike and cheated. You lost", Toast.LENGTH_LONG).show();
-                    motivation.setText("You lost the game because of cheating. If you didn't, you should try a career as a professional cyclist");
+                    Toast.makeText(getApplicationContext(),"You lost.", Toast.LENGTH_LONG).show();
+                    motivation.setText("You lost. Maybe next time!");
                 }
 
             }
@@ -93,13 +86,12 @@ public class minigame1 extends AppCompatActivity {
 
     }
 
-
-
-
-
-
     public void switchMain(View view) {
         Intent intent = new Intent(this, mainInt.class);
         startActivity(intent);
     }
+
+
 }
+
+

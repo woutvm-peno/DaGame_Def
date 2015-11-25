@@ -106,6 +106,10 @@ public class mainInt extends AppCompatActivity
         Intent intent = new Intent(this, minigame2.class);
         startActivity(intent);
     }
+    public void switchMinigame3(View view) {
+        Intent intent = new Intent(this, minigame3.class);
+        startActivity(intent);
+    }
 
 
 
@@ -322,7 +326,7 @@ public class mainInt extends AppCompatActivity
 //            switchLogin(null);
 //        }
 
-            return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item);
     }
 
 
@@ -344,6 +348,9 @@ public class mainInt extends AppCompatActivity
         }
         else if (id == R.id.minigame2) {
             switchMiniggame2(null);
+        }
+        else if (id == R.id.minigame3) {
+            switchMinigame3(null);
         }
 
 
