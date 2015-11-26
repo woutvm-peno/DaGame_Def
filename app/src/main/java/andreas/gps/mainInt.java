@@ -82,8 +82,7 @@ public class mainInt extends AppCompatActivity
     // switch to other activity functions
 
     public void switchGameMode(View view) {
-        String username = preferences.getString("myusername","//////");
-        if (!username.equals("//////")) {
+        if (!preferences.getString("myusername","").equals("")) {
             Intent intent = new Intent(this, gameMode.class);
             startActivity(intent);
         } else {
