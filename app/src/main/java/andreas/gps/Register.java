@@ -75,7 +75,7 @@ public class Register extends AppCompatActivity implements View.OnClickListener{
         } else if (!password_register_string.equals(password_confirm_string)) {
             Toast.makeText(getApplicationContext(), "Passwords do not match!", Toast.LENGTH_SHORT).show();
 
-        } else if (email_edit_string.indexOf("@") <= -1) {
+        } else if (!email_edit_string.indexOf("@") <= -1) {
             Toast.makeText(getApplicationContext(), "Please fill in a valid email adress.", Toast.LENGTH_SHORT).show();
 
         } else if (containsUsername(login_edit_string)){
