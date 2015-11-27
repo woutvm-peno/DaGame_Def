@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -60,6 +61,8 @@ public class mainInt extends AppCompatActivity
     boolean network_connected = false;
     boolean connections_working = false;
     public float zoomlevel = 15;
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
 
 
 
@@ -79,8 +82,12 @@ public class mainInt extends AppCompatActivity
     // switch to other activity functions
 
     public void switchGameMode(View view) {
-        Intent intent = new Intent(this, gameMode.class);
-        startActivity(intent);
+        if (!preferences.getString("myusername","").equals("")) {
+            Intent intent = new Intent(this, gameMode.class);
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
+        }
     }
     public void switchLogin(View view) {
         Intent intent = new Intent(this, login.class);
@@ -129,6 +136,7 @@ public class mainInt extends AppCompatActivity
         //toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        assert getSupportActionBar() != null;
         getSupportActionBar().setTitle("Home");
 
 
@@ -143,7 +151,6 @@ public class mainInt extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -153,14 +160,24 @@ public class mainInt extends AppCompatActivity
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-        Log.i(TAG,"APIclient created");
+        Log.i(TAG, "APIclient created");
         mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(5000)        // 5 seconds, in milliseconds
                 .setFastestInterval(1000); // 1 second, in milliseconds
 
+        preferences = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
+        editor = getSharedPreferences("MyPreferences",Context.MODE_PRIVATE).edit();
     }
 
+
+
+
+    @Override
+    public void onDestroy(){
+        editor.putString("myusername","");
+        super.onDestroy();
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
