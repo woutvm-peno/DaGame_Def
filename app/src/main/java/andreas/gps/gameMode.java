@@ -89,15 +89,15 @@ public class gameMode extends AppCompatActivity
 
     //text kkillmoves
     public String TAG2 = "abcdef";
-    private String killedText = "kill confirmed";
-    private String killedPointsAddedText = "point added!";
-    private String killedNotText = "You missed try again!";
-    private String killmoveAcellorText = "accelerate!";
+    private String killedText = "Kill confirmed!";
+    private String killedPointsAddedText = "Points added!";
+    private String killedNotText = "You missed, try again!";
+    private String killmoveAcellorText = "Accelerate!";
     private String killmoveGyroText = "Shoot him down!";
-    private String killmoveSoundText = "Scream him to dead!";
-    private String killmoveSpeedText = "get to your highest speed!";
-    private String killmovelightText = "Remove al light!";
-    private String killmovePressButtonText = "Press him to dead!";
+    private String killmoveSoundText = "Scream him to death!";
+    private String killmoveSpeedText = "Get to your highest speed!";
+    private String killmovelightText = "Remove all light!";
+    private String killmovePressButtonText = "Press him to death!";
     private double killmoveAcellorValue = 0.5;
     private double killmoveGyroValue = 40;
     private double killmoveSoundValue = 25000;

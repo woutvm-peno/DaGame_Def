@@ -86,7 +86,7 @@ public class mainInt extends AppCompatActivity
             Intent intent = new Intent(this, gameMode.class);
             startActivity(intent);
         } else {
-            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Please log in first.", Toast.LENGTH_SHORT).show();
         }
     }
     public void switchLogin(View view) {
